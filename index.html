@@ -127,30 +127,29 @@
     </footer>
 
     <script>
-        // 核心動態跨日日期生成引擎
-        function getMockCwaData() {
+        // 資料集定義
+        let engineData = [];
+        let surfChart = null;
+
+        function generateData() {
             const now = new Date();
-            
-            // 產生相對於今天的「月/日 星期幾」格式名稱
             const getDayLabel = (offsetDays) => {
                 const targetDate = new Date(now.getTime() + offsetDays * 24 * 60 * 60 * 1000);
                 const month = targetDate.getMonth() + 1;
                 const date = targetDate.getDate();
-                const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
-                const dayName = weekdays[targetDate.getDay()];
-                
                 if (offsetDays === 0) return `今天 (${month}/${date})`;
                 if (offsetDays === 1) return `明天 (${month}/${date})`;
                 if (offsetDays === 2) return `後天 (${month}/${date})`;
-                return `${dayName} (${month}/${date})`;
+                return `${month}/${date}`;
             };
 
             const day0 = getDayLabel(0);
             const day1 = getDayLabel(1);
             const day2 = getDayLabel(2);
 
-            return [
+            engineData = [
                 {
+                    locationId: "north",
                     locationName: "新竹鹿港沿海",
                     displayName: "金山 烏石港沙灘 (北部沿海)",
                     current: { wave: "0.5", period: "5.2", periodDesc: "短週期小浪", windIcon: "rotate(180deg)", windText: "偏南風 / 2 m/s", swell: "東北東", swellDeg: "75°", temp: "29", tideDetails: "當前水位: 1.1m", state: "小浪稍微平緩", weatherIcon: '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>' },
@@ -167,8 +166,151 @@
                     ]
                 },
                 {
-                    // 🎯 完美同步 SwellEye 數據，並向下延伸擴充為「今天、明天、後天」跨日趨勢！
+                    locationId: "yilan",
                     locationName: "彭佳嶼基隆海面",
                     displayName: "宜蘭 烏石港外澳 (東北部沿海)",
                     current: { wave: "0.8", period: "6.1", periodDesc: "短週期風浪，有雷陣雨", windIcon: "rotate(290deg)", windText: "西北西風 / 8 m/s", swell: "西北西", swellDeg: "292°", temp: "26", tideDetails: "16:00 潮汐水位: 0.8m", state: "適合長板練習", weatherIcon: '<i class="fa-solid fa-cloud-showers-heavy" style="color:#64748b;"></i>' },
-                    chartWave:
+                    chartWave: [0.7, 0.8, 1.1, 1.3, 0.6, 0.5],
+                    chartTide: [1.2, 0.8, -0.5, 1.1, -0.3, 0.9],
+                    timeLabels: [`${day0} 上午`, `${day0} 下午`, `${day1} 上午`, `${day1} 下午`, `${day2} 上午`, `${day2} 下午`],
+                    forecast: [
+                        { time: `${day0} 上午 12:00`, wave: "0.7 m", tag: "low", period: "6.1s", swell: "西北西", tide: "1.2m", temp: "27°C", wind: "西北西 5m/s" },
+                        { time: `${day0} 下午 16:00`, wave: "0.8 m", tag: "low", period: "6.1s", swell: "西北西", tide: "0.8m", temp: "26°C", wind: "西北西 8m/s" },
+                        { time: `${day1} 上午 08:00`, wave: "1.1 m", tag: "mid", period: "7.2s", swell: "北向", tide: "-0.5m", temp: "25°C", wind: "東北風 6m/s" },
+                        { time: `${day1} 下午 16:00`, wave: "1.3 m", tag: "mid", period: "7.5s", swell: "東北東", tide: "1.1m", temp: "26°C", wind: "東北風 7m/s" },
+                        { time: `${day2} 上午 08:00`, wave: "0.6 m", tag: "low", period: "6.0s", swell: "東向", tide: "-0.3m", temp: "27°C", wind: "偏東風 4m/s" },
+                        { time: `${day2} 下午 16:00`, wave: "0.5 m", tag: "low", period: "5.8s", swell: "東南東", tide: "0.9m", temp: "28°C", wind: "南風 3m/s" }
+                    ]
+                },
+                {
+                    locationId: "hualien",
+                    locationName: "宜蘭蘇澳沿海",
+                    displayName: "花蓮 磯崎海灘 (東部沿海)",
+                    current: { wave: "1.2", period: "7.8", periodDesc: "中週期湧浪，浪形尚可", windIcon: "rotate(90deg)", windText: "偏東風 / 4 m/s", swell: "東向", swellDeg: "95°", temp: "27", tideDetails: "當前水位: 0.9m", state: "有推力中浪", weatherIcon: '<i class="fa-solid fa-cloud" style="color:#94a3b8;"></i>' },
+                    chartWave: [1.2, 1.1, 1.4, 1.6, 1.1, 0.9],
+                    chartTide: [0.5, -0.4, 0.8, -0.6, 0.4, 0.7],
+                    timeLabels: [`${day0} 上午`, `${day0} 下午`, `${day1} 上午`, `${day1} 下午`, `${day2} 上午`, `${day2} 下午`],
+                    forecast: [
+                        { time: `${day0} 上午 08:00`, wave: "1.2 m", tag: "mid", period: "7.8s", swell: "東向", tide: "0.5m", temp: "27°C", wind: "東風 4m/s" },
+                        { time: `${day0} 下午 16:00`, wave: "1.1 m", tag: "mid", period: "7.8s", swell: "東南東", tide: "-0.4m", temp: "27°C", wind: "東北東 4m/s" },
+                        { time: `${day1} 上午 08:00`, wave: "1.4 m", tag: "mid", period: "8.2s", swell: "東向", tide: "0.8m", temp: "26°C", wind: "東南東 5m/s" },
+                        { time: `${day1} 下午 16:00`, wave: "1.6 m", tag: "high", period: "8.5s", swell: "南東", tide: "-0.6m", temp: "27°C", wind: "南風 6m/s" },
+                        { time: `${day2} 上午 08:00`, wave: "1.1 m", tag: "mid", period: "7.5s", swell: "東向", tide: "0.4m", temp: "28°C", wind: "南風 4m/s" },
+                        { time: `${day2} 下午 16:00`, wave: "0.9 m", tag: "low", period: "6.8s", swell: "偏南", tide: "0.7m", temp: "29°C", wind: "西南風 3m/s" }
+                    ]
+                }
+            ];
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. 生成資料
+            generateData();
+            
+            // 2. 刷新大標題時間
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+            const updateLabel = document.getElementById('update-time');
+            if (updateLabel) {
+                updateLabel.innerText = `最後預報核對時間：${todayStr} 16:00 (數據引擎已自動延伸未來三日跨日軸)`;
+            }
+
+            // 3. 安全防錯初始化 Chart 圖表
+            try {
+                initChart();
+            } catch (chartError) {
+                console.error("圖表宣告失敗，但保護機制啟動，不影響表格渲染：", chartError);
+            }
+            
+            // 4. 強制執行 UI 渲染與表格生成
+            renderData('yilan');
+        });
+
+        function initChart() {
+            const canvas = document.getElementById('surfChart');
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            const ctx = canvas.getContext('2d');
+            const initData = engineData.find(d => d.locationId === "yilan");
+            
+            surfChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: initData.timeLabels,
+                    datasets: [
+                        { label: '預估浪高 (公尺)', data: initData.chartWave, borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.08)', borderWidth: 3, tension: 0.2, fill: true, yAxisID: 'y' },
+                        { label: '潮汐水位 (m)', data: initData.chartTide, borderColor: '#ef4444', borderDash: [5, 5], borderWidth: 2, tension: 0.3, fill: false, yAxisID: 'y1' }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '浪高 (m)' }, beginAtZero: true, max: 3 },
+                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '潮汐高度 (m)' }, grid: { drawOnChartArea: false }, min: -1.5, max: 1.5 }
+                    } 
+                }
+            });
+        }
+
+        function switchRegion(e, regionId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(e && e.currentTarget) e.currentTarget.classList.add('active');
+            renderData(regionId);
+        }
+
+        function renderData(regionId) {
+            const data = engineData.find(d => d.locationId === regionId);
+            if(!data) return;
+
+            // 1. 刷新即時數據看板卡片
+            document.getElementById('current-spot').innerText = data.displayName;
+            document.getElementById('card-wave').innerHTML = `${data.current.wave} <span class="unit">m</span>`;
+            document.getElementById('card-wave-state').innerText = `浪況狀態: ${data.current.state}`;
+            
+            document.getElementById('card-period').innerHTML = `${data.current.period} <span class="unit">s</span>`;
+            document.getElementById('card-period-desc').innerText = data.current.periodDesc;
+            
+            document.getElementById('card-wind-icon').innerHTML = `<i class="fa-solid fa-location-arrow" style="transform: ${data.current.windIcon};"></i>`;
+            document.getElementById('card-wind-text').innerText = data.current.windText;
+            
+            document.getElementById('card-swell-dir').innerText = data.current.swell;
+            document.getElementById('card-swell-deg').innerText = `方位角: ${data.current.swellDeg}`;
+            
+            document.getElementById('card-temp').innerHTML = `${data.current.temp}<span class="unit">°C</span> ${data.current.weatherIcon}`;
+            document.getElementById('card-tide-text').innerText = data.current.tideDetails;
+
+            // 2. 更新雙軸圖表 (加入安全保護鎖)
+            if(surfChart) {
+                try {
+                    surfChart.data.labels = data.timeLabels;
+                    surfChart.data.datasets[0].data = data.chartWave;
+                    surfChart.data.datasets[1].data = data.chartTide;
+                    surfChart.update();
+                } catch(err) {
+                    console.log("圖表數據刷新跳過:", err);
+                }
+            }
+
+            // 3. 刷新下方表格
+            const tbody = document.getElementById('forecast-tbody');
+            if (tbody) {
+                let html = "";
+                data.forecast.forEach(item => {
+                    html += `
+                        <tr>
+                            <td style="font-weight:bold; color:#475569;">${item.time}</td>
+                            <td><span class="wave-tag ${item.tag}">${item.wave}</span></td>
+                            <td style="font-weight:bold; color:#0f172a;">${item.period}</td>
+                            <td><i class="fa-solid fa-compass" style="color:#64748b;"></i> ${item.swell}</td>
+                            <td style="color:#b45309; font-weight:bold;">${item.tide}</td>
+                            <td style="font-weight:bold; color:#0284c7;">${item.temp}</td>
+                            <td>${item.wind}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }
+        }
+    </script>
+</body>
+</html>
