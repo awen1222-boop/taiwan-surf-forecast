@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣衝浪一週預報 Surf Forecast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fa-solid fa-water"></i> Taiwan Surf</div>
+        <nav class="region-tabs">
+            <button class="tab-btn" onclick="switchRegion(event, 'north')">北部 (金山)</button>
+            <button class="tab-btn active" onclick="switchRegion(event, 'yilan')">宜蘭 (烏石港)</button>
+            <button class="tab-btn" onclick="switchRegion(event, 'hualien')">花蓮 (磯崎)</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="current-weather">
+            <div class="spot-info">
+                <h2 id="current-spot">載入中...</h2>
+                <p class="date-time" id="update-time">最後更新：擷取中...</p>
+            </div>
+            
+            <div class="weather-grid">
+                <div class="weather-card primary">
+                    <div class="label">當前浪高</div>
+                    <div class="value" id="card-wave">-- <span class="unit">m</span></div>
+                    <div class="sub-text" id="card-period"><i class="fa-solid fa-wave-square"></i> 浪況狀態: --</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label">風向風速</div>
+                    <div class="value" id="card-wind-icon"><i class="fa-solid fa-location-arrow"></i></div>
+                    <div class="sub-text" id="card-wind-text">資料讀取中...</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label">海況流速</div>
+                    <div class="value" id="card-tide-status">--</div>
+                    <div class="sub-text" id="card-tide-text">海浪流速資料</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label">天氣狀況</div>
+                    <div class="value" id="card-temp">--</div>
+                    <div class="sub-text" id="card-weather-text">--</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h3><i class="fa-solid fa-chart-line"></i> 未來 3 天浪高變化趨勢</h3>
+            <div class="canvas-container">
+                <canvas id="surfChart"></canvas>
+            </div>
+        </section>
+
+        <section class="forecast-section">
+            <h3><i class="fa-solid fa-calendar-days"></i> 未來 3 天詳細海象預報</h3>
+            <div class="table-responsive">
+                <table class="forecast-table">
+                    <thead>
+                        <tr>
+                            <th>時間區段</th>
+                            <th>預估浪高</th>
+                            <th>風向</th>
+                            <th>風力風速</th>
+                            <th>海浪狀況</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecast-tbody">
+                        <tr>
+                            <td colspan="5" style="text-align:center;">正在連線至中央氣象署抓取即時海象預報...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Taiwan Surf Forecast. 連線通訊來源：中華民國中央氣象署 CWA Open Data</p>
+    </footer>
+
+    <script>
+        // 填入你申請的氣象署授權碼
+        const CWA_API_KEY = "CWA-75
