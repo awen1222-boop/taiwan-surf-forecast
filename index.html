@@ -21,7 +21,6 @@
         .spot-info h2 { color: #0b3c5d; }
         .date-time { font-size: 0.85rem; color: #777; margin-bottom: 20px; }
         
-        /* 改為 5 欄式響應式網格，對應 5 大核心資訊 */
         .weather-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 15px; }
         .weather-card { background: #f8fafc; border-left: 4px solid #328cc1; padding: 18px; border-radius: 8px; }
         .weather-card.primary { background: #e0f2fe; border-left-color: #0284c7; }
@@ -61,4 +60,219 @@
     <main class="container">
         <section class="current-weather">
             <div class="spot-info">
-                <h2 id="current-spot">宜蘭 烏石港外澳 (東北
+                <h2 id="current-spot">宜蘭 烏石港外澳 (東北部沿海)</h2>
+                <p class="date-time" id="update-time">最後更新：計算中...</p>
+            </div>
+            
+            <div class="weather-grid">
+                <div class="weather-card primary">
+                    <div class="label"><i class="fa-solid fa-water"></i> 當前浪高</div>
+                    <div class="value" id="card-wave">1.4 <span class="unit">m</span></div>
+                    <div class="sub-text" id="card-wave-state">浪況狀態: 中浪</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label"><i class="fa-solid fa-wave-square"></i> 浪週期</div>
+                    <div class="value" id="card-period">8.5 <span class="unit">s</span></div>
+                    <div class="sub-text" id="card-period-desc">適合長短板碎浪推進</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label"><i class="fa-solid fa-wind"></i> 當前風向風速</div>
+                    <div class="value" id="card-wind-icon"><i class="fa-solid fa-location-arrow" style="transform: rotate(45deg);"></i></div>
+                    <div class="sub-text" id="card-wind-text">東北風 / 5至6級</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label"><i class="fa-solid fa-compass"></i> 湧浪方向 (浪向)</div>
+                    <div class="value" id="card-swell-dir">東向</div>
+                    <div class="sub-text" id="card-swell-deg">方位角: 90° (能量飽滿)</div>
+                </div>
+                <div class="weather-card">
+                    <div class="label"><i class="fa-solid fa-arrows-up-down"></i> 潮汐與氣溫</div>
+                    <div class="value" id="card-temp">27<span class="unit">°C</span></div>
+                    <div class="sub-text" id="card-tide-text">11:30 乾潮 | 18:15 滿潮</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h3><i class="fa-solid fa-chart-line"></i> 今日浪高與潮汐水位曲線趨勢</h3>
+            <div class="canvas-container">
+                <canvas id="surfChart"></canvas>
+            </div>
+        </section>
+
+        <section class="forecast-section">
+            <h3><i class="fa-solid fa-calendar-days"></i> 未來 3 天詳細海象欄位指標</h3>
+            <div class="table-responsive">
+                <table class="forecast-table">
+                    <thead>
+                        <tr>
+                            <th>時間區段</th>
+                            <th>預估浪高</th>
+                            <th>浪週期</th>
+                            <th>湧浪方向(浪向)</th>
+                            <th>潮汐狀態</th>
+                            <th>預估氣溫</th>
+                            <th>風向風速</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecast-tbody">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Taiwan Surf Forecast. 欄位整合：浪高・週期・風向・浪向・潮汐・氣溫</p>
+    </footer>
+
+    <script>
+        function getMockCwaData() {
+            const now = new Date();
+            const format = (d, hop) => {
+                let target = new Date(d.getTime() + hop * 12 * 60 * 60 * 1000);
+                let month = String(target.getMonth() + 1).padStart(2, '0');
+                let date = String(target.getDate()).padStart(2, '0');
+                let hour = target.getHours() < 12 ? "06:00" : "18:00";
+                return `${month}/${date} ${hour}`;
+            };
+
+            return [
+                {
+                    locationName: "新竹鹿港沿海",
+                    displayName: "金山 烏石港沙灘 (北部沿海)",
+                    current: { wave: "0.8", period: "5.5", periodDesc: "短週期風浪，浪形較軟", windIcon: "rotate(180deg)", windText: "偏南風 / 4至5級", swell: "東北東", swellDeg: "75°", temp: "30", tideDetails: "08:15 滿潮 | 14:30 乾潮", weatherIcon: '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>' },
+                    chartWave: [0.8, 1.1, 0.6, 0.5, 0.7, 0.4],
+                    chartTide: [0.8, 0.2, -0.4, 0.5, 0.9, 0.1],
+                    timeLabels: [format(now,0), format(now,1), format(now,2), format(now,3), format(now,4), format(now,5)],
+                    forecast: [
+                        { time: `${format(now,0)} ~ ${format(now,1)}`, wave: "0.8 m", tag: "low", period: "5.5s", swell: "東北東", tide: "滿潮退水中", temp: "29°C", wind: "偏南風 4級" },
+                        { time: `${format(now,1)} ~ ${format(now,2)}`, wave: "1.1 m", tag: "mid", period: "5.8s", swell: "東南東", tide: "乾潮底", temp: "31°C", wind: "西南風 5級" },
+                        { time: `${format(now,2)} ~ ${format(now,3)}`, wave: "0.6 m", tag: "low", period: "5.0s", swell: "東北", tide: "漲潮中", temp: "26°C", wind: "偏北風 4級" }
+                    ]
+                },
+                {
+                    locationName: "彭佳嶼基隆海面",
+                    displayName: "宜蘭 烏石港外澳 (東北部沿海)",
+                    current: { wave: "1.4", period: "8.5", periodDesc: "中週期湧浪，推力適中", windIcon: "rotate(45deg)", windText: "東北風 / 5至6級", swell: "東向", swellDeg: "90°", temp: "27", tideDetails: "11:30 乾潮 | 18:15 滿潮", weatherIcon: '<i class="fa-solid fa-cloud-sun" style="color:#64748b;"></i>' },
+                    chartWave: [1.4, 2.1, 0.7, 1.1, 1.5, 0.9],
+                    chartTide: [-0.3, -0.6, 0.2, 0.8, 0.4, -0.2],
+                    timeLabels: [format(now,0), format(now,1), format(now,2), format(now,3), format(now,4), format(now,5)],
+                    forecast: [
+                        { time: `${format(now,0)} ~ ${format(now,1)}`, wave: "1.4 m", tag: "mid", period: "8.5s", swell: "東向", tide: "乾潮正在退", temp: "27°C", wind: "東北風 5級" },
+                        { time: `${format(now,1)} ~ ${format(now,2)}`, wave: "2.1 m", tag: "high", period: "9.2s", swell: "東偏北", tide: "滿潮頂峰", temp: "28°C", wind: "東北風 6級" },
+                        { time: `${format(now,2)} ~ ${format(now,3)}`, wave: "0.7 m", tag: "low", period: "7.0s", swell: "東向", tide: "退潮中", temp: "24°C", wind: "偏東風 4級" }
+                    ]
+                },
+                {
+                    locationName: "宜蘭蘇澳沿海",
+                    displayName: "花蓮 磯崎海灘 (東部沿海)",
+                    current: { wave: "2.5", period: "10.2", periodDesc: "長週期地頭湧，能量強勁", windIcon: "rotate(90deg)", windText: "偏東風 / 6至7級", swell: "東南東", swellDeg: "110°", temp: "28", tideDetails: "09:00 滿潮 | 15:45 乾潮", weatherIcon: '<i class="fa-solid fa-cloud" style="color:#94a3b8;"></i>' },
+                    chartWave: [2.5, 2.3, 1.6, 1.8, 2.0, 1.4],
+                    chartTide: [1.2, 0.5, -0.2, -0.5, 0.4, 1.0],
+                    timeLabels: [format(now,0), format(now,1), format(now,2), format(now,3), format(now,4), format(now,5)],
+                    forecast: [
+                        { time: `${format(now,0)} ~ ${format(now,1)}`, wave: "2.5 m", tag: "high", period: "10.2s", swell: "東南東", tide: "滿潮轉退", temp: "28°C", wind: "偏東風 6級" },
+                        { time: `${format(now,1)} ~ ${format(now,2)}`, wave: "2.3 m", tag: "high", period: "10.5s", swell: "東南向", tide: "大退潮", temp: "29°C", wind: "東南風 6級" },
+                        { time: `${format(now,2)} ~ ${format(now,3)}`, wave: "1.6 m", tag: "mid", period: "9.5s", swell: "東向", tide: "漲潮中", temp: "25°C", wind: "南風 5級" }
+                    ]
+                }
+            ];
+        }
+
+        let surfChart = null;
+        const engineData = getMockCwaData();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            const todayStr = new Date().toLocaleDateString('zh-TW', {month: 'numeric', day: 'numeric'});
+            document.getElementById('update-time').innerText = `最後更新時間：今天 ${todayStr} 17:30 衝浪指標綜合預報`;
+            renderData('yilan');
+        });
+
+        function initChart() {
+            if (typeof Chart !== 'undefined') {
+                const ctx = document.getElementById('surfChart').getContext('2d');
+                const initData = engineData.find(d => d.locationName === "彭佳嶼基隆海面");
+                
+                surfChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: initData.timeLabels,
+                        datasets: [
+                            { label: '預估浪高 (公尺)', data: initData.chartWave, borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.08)', borderWidth: 3, tension: 0.3, fill: true, yAxisID: 'y' },
+                            { label: '潮汐水位 (m)', data: initData.chartTide, borderColor: '#ef4444', borderDash: [5, 5], borderWidth: 2, tension: 0.4, fill: false, yAxisID: 'y1' }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: { 
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '浪高 (m)' }, beginAtZero: true, max: 4 },
+                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '潮汐高度 (m)' }, grid: { drawOnChartArea: false }, min: -1.5, max: 1.5 }
+                        } 
+                    }
+                });
+            }
+        }
+
+        function switchRegion(e, regionId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(e && e.currentTarget) e.currentTarget.classList.add('active');
+            renderData(regionId);
+        }
+
+        function renderData(regionId) {
+            let targetKey = "彭佳嶼基隆海面";
+            if(regionId === 'north') targetKey = "新竹鹿港沿海";
+            if(regionId === 'hualien') targetKey = "宜蘭蘇澳沿海";
+
+            const data = engineData.find(d => d.locationName === targetKey);
+            if(!data) return;
+
+            // 1. 刷新即時數據看板卡片
+            document.getElementById('current-spot').innerText = data.displayName;
+            document.getElementById('card-wave').innerHTML = `${data.current.wave} <span class="unit">m</span>`;
+            document.getElementById('card-wave-state').innerText = `浪況狀態: ${data.current.state}`;
+            
+            document.getElementById('card-period').innerHTML = `${data.current.period} <span class="unit">s</span>`;
+            document.getElementById('card-period-desc').innerText = data.current.periodDesc;
+            
+            document.getElementById('card-wind-icon').innerHTML = `<i class="fa-solid fa-location-arrow" style="transform: ${data.current.windIcon};"></i>`;
+            document.getElementById('card-wind-text').innerText = data.current.windText;
+            
+            document.getElementById('card-swell-dir').innerText = data.current.swell;
+            document.getElementById('card-swell-deg').innerText = `方位角: ${data.current.swellDeg}`;
+            
+            // 安全修正：移除出錯的 .replace() 處理，改用乾淨資料注入
+            document.getElementById('card-temp').innerHTML = `${data.current.temp}<span class="unit">°C</span> ${data.current.weatherIcon}`;
+            document.getElementById('card-tide-text').innerText = data.current.tideDetails;
+
+            // 2. 更新雙軸圖表
+            if(surfChart) {
+                surfChart.data.labels = data.timeLabels;
+                surfChart.data.datasets[0].data = data.chartWave;
+                surfChart.data.datasets[1].data = data.chartTide;
+                surfChart.update();
+            }
+
+            // 3. 刷新下方表格
+            const tbody = document.getElementById('forecast-tbody');
+            let html = "";
+            data.forecast.forEach(item => {
+                html += `
+                    <tr>
+                        <td style="font-size:0.85rem; font-weight:bold; color:#475569;">${item.time}</td>
+                        <td><span class="wave-tag ${item.tag}">${item.wave}</span></td>
+                        <td style="font-weight:bold; color:#0f172a;">${item.period}</td>
+                        <td><i class="fa-solid fa-compass" style="color:#64748b;"></i> ${item.swell}</td>
+                        <td style="color:#b45309; font-weight:bold;">${item.tide}</td>
+                        <td style="font-weight:bold; color:#0284c7;">${item.temp}</td>
+                        <td>${item.wind}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
