@@ -5,97 +5,54 @@
     <title>Surfer Weather Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg-color: #eaf3fa; --card-bg: #ffffff; --border-blue: #3a97e8; --text-dark: #333333; }
-        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
-        .container { width: 100%; max-width: 440px; background-color: #f7fbfe; border: 2px solid var(--border-blue); border-radius: 20px; padding: 15px; }
-        h1 { text-align: center; color: #1e3a8a; font-size: 22px; margin-bottom: 15px; }
-        .location-selector { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px; }
-        .btn-location { flex: 1; border: 1.5px solid var(--border-blue); background: white; padding: 8px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-location.active { background-color: #2563eb; color: white; }
-        .hidden { display: none !important; }
-        .integrated-summary { display: flex; gap: 10px; margin-bottom: 15px; }
-        .panel { flex: 1; background: white; border: 1.5px solid var(--border-blue); border-radius: 12px; text-align: center; padding: 10px; }
-        canvas { width: 100%; height: 160px; margin-top: 10px; }
-        .status-light { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block; }
-        .status-light.green { background: #22c55e; }
-        footer { text-align: center; font-size: 12px; margin-top: 15px; }
+        :root { --bg-color: #eaf3fa; --card-bg: #ffffff; --border-blue: #3a97e8; }
+        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 20px 10px; }
+        .container { width: 100%; max-width: 440px; background-color: white; border: 2px solid var(--border-blue); border-radius: 20px; padding: 15px; }
+        h1 { text-align: center; color: #1e3a8a; font-size: 22px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .panel { border: 1px solid var(--border-blue); padding: 15px; border-radius: 10px; text-align: center; }
+        .status { text-align: center; margin-top: 20px; font-size: 12px; }
+        .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: red; }
+        .light.green { background: green; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>🏄‍♂️ Surfer Weather Dashboard</h1>
-    <div class="location-selector" id="location-selector">
-        <button id="btn-0" class="btn-location active" onclick="changeLocation(0)">讀取中...</button>
-        <button id="btn-1" class="btn-location" onclick="changeLocation(1)">讀取中...</button>
-        <button id="btn-2" class="btn-location" onclick="changeLocation(2)">讀取中...</button>
-    </div>
-
-    <div id="dashboard-content">
-        <div class="integrated-summary">
-            <div class="panel">浪高<div style="font-size: 24px; font-weight: bold;" id="wave-val">--</div>m</div>
-            <div class="panel">風速<div style="font-size: 24px; font-weight: bold;" id="wind-val">--</div>m/s</div>
+    <div class="container">
+        <h1>🏄‍♂️ Surfer Weather</h1>
+        <div id="data-display" class="grid">
+            <div class="panel">浪高<br><span id="wave" style="font-size:20px; font-weight:bold;">--</span> m</div>
+            <div class="panel">風速<br><span id="wind" style="font-size:20px; font-weight:bold;">--</span> m/s</div>
         </div>
-        <div class="chart-card"><canvas id="waveChart"></canvas></div>
+        <div class="status">
+            <div id="light" class="light"></div> <span id="msg">連線中...</span>
+        </div>
     </div>
 
-    <div id="error-display" class="hidden" style="padding: 20px; border: 2px dashed red; text-align: center;">
-        <p id="main-error-text"></p>
-    </div>
-
-    <footer>
-        <div class="api-status"><div id="status-light" class="status-light"></div> <span id="status-text">連線測試中...</span></div>
-    </footer>
-</div>
-
-<script>
-    const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
-    let apiData = [];
-
-    async function fetchWeatherData() {
-        try {
+    <script>
+        // 核心邏輯：氣象署官方 API 呼叫方式
+        async function getCWAData() {
+            const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
+            // 使用 corsproxy 確保瀏覽器能讀到資料
             const url = `https://corsproxy.io/?https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-A0012-001?Authorization=${API_KEY}&format=JSON`;
-            const response = await fetch(url);
-            const json = await response.json();
-            apiData = json.records.location.slice(0, 3);
             
-            document.querySelectorAll('.btn-location').forEach((btn, i) => {
-                if(apiData[i]) btn.innerText = apiData[i].locationName;
-            });
-
-            document.getElementById('status-light').classList.add('green');
-            document.getElementById('status-text').innerText = "連線成功";
-            changeLocation(0);
-        } catch (error) {
-            document.getElementById('error-display').classList.remove('hidden');
-            document.getElementById('main-error-text').innerText = error.message;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                // 這裡選取第一個海域資料 (氣象署資料結構)
+                const target = data.records.location[0].weatherElement;
+                const wave = target.find(e => e.elementName === 'WaveHeight').time[0].elementValue[0].value;
+                const wind = target.find(e => e.elementName === 'WindSpeed').time[0].elementValue[0].value;
+                
+                document.getElementById('wave').innerText = wave;
+                document.getElementById('wind').innerText = wind;
+                document.getElementById('light').classList.add('green');
+                document.getElementById('msg').innerText = "資料讀取成功";
+            } catch (e) {
+                document.getElementById('msg').innerText = "連線失敗: " + e.message;
+            }
         }
-    }
-
-    function changeLocation(index) {
-        document.querySelectorAll('.btn-location').forEach((btn, i) => btn.classList.toggle('active', i === index));
-        const data = apiData[index];
-        if(!data) return;
-
-        // 提取數據
-        const wave = data.weatherElement.find(e => e.elementName === 'WaveHeight').time[0].elementValue[0].value;
-        const wind = data.weatherElement.find(e => e.elementName === 'WindSpeed').time[0].elementValue[0].value;
-        
-        document.getElementById('wave-val').innerText = wave;
-        document.getElementById('wind-val').innerText = wind;
-        
-        drawChart([wave, wave*0.9, wave*1.1, wave, wave*0.8]); // 模擬趨勢圖
-        document.getElementById('dashboard-content').classList.remove('hidden');
-    }
-
-    function drawChart(data) {
-        const ctx = document.getElementById('waveChart').getContext('2d');
-        ctx.clearRect(0, 0, 400, 200);
-        ctx.fillStyle = '#0284c7';
-        data.forEach((val, i) => ctx.fillRect(i * 80 + 20, 150 - val * 50, 40, val * 50));
-    }
-
-    document.addEventListener("DOMContentLoaded", fetchWeatherData);
-</script>
+        getCWAData();
+    </script>
 </body>
 </html>
