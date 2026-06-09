@@ -12,9 +12,8 @@
             --border-blue: #3a97e8;
             --text-dark: #333333;
             --text-muted: #777777;
-            --wave-purple: #6366f1;
-            --wind-green: #84cc16;
-            --light-blue: #f0f7fd;
+            --wave-blue: #0284c7;
+            --tide-teal: #0d9488;
         }
 
         *, *::before, *::after {
@@ -42,6 +41,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
+        /* 標題與衝浪 Icon */
         h1 {
             text-align: center;
             color: #1e3a8a;
@@ -49,6 +49,10 @@
             margin-top: 5px;
             margin-bottom: 15px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .location-selector {
@@ -105,10 +109,7 @@
             justify-content: center;
         }
 
-        .card-icon-area i {
-            font-size: 52px;
-        }
-
+        .card-icon-area i { font-size: 52px; }
         .wave-icon { color: #3b82f6; }
         .wind-icon { color: #60a5fa; }
 
@@ -122,7 +123,6 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            position: relative;
         }
 
         .wave-banner { background-color: #6366f1; }
@@ -152,47 +152,7 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        .env-card {
-            background: var(--card-bg);
-            border: 1.5px solid var(--border-blue);
-            border-radius: 12px;
-            padding: 15px 10px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .env-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            height: 95px;
-        }
-
-        .env-time {
-            font-size: 15px;
-            color: #444444;
-            font-weight: 500;
-        }
-
-        .env-label {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-muted);
-        }
-
-        .env-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333333;
-        }
-
-        .env-icon {
-            font-size: 32px;
-        }
-
+        /* 曲線圖卡片共用樣式 */
         .chart-card {
             background: var(--card-bg);
             border: 1.5px solid var(--border-blue);
@@ -214,335 +174,4 @@
         .canvas-container {
             position: relative;
             width: 100%;
-            height: 160px;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        footer {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 10px;
-        }
-        
-        footer a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>Surfer Weather Dashboard</h1>
-        
-        <div class="location-selector">
-            <button id="btn-wushi" class="btn-location active" onclick="changeLocation('wushi')">宜蘭 烏石港</button>
-            <button id="btn-jici" class="btn-location" onclick="changeLocation('jici')">花蓮 磯崎</button>
-            <button id="btn-fulong" class="btn-location" onclick="changeLocation('fulong')">新北 福隆</button>
-        </div>
-
-        <div class="top-row">
-            <div class="main-card">
-                <div class="card-icon-area">
-                    <i class="fa-solid fa-wave-square wave-icon"></i>
-                </div>
-                <div class="card-banner wave-banner">
-                    <span id="wave-height">1.1</span><span class="unit">m</span>
-                    <i class="fa-regular fa-compass compass-icon" id="wave-dir"></i>
-                </div>
-                <div class="card-footer" id="wave-period">@ 6.4 s</div>
-            </div>
-
-            <div class="main-card">
-                <div class="card-icon-area">
-                    <i class="fa-solid fa-wind wind-icon"></i>
-                </div>
-                <div class="card-banner wind-banner">
-                    <span id="wind-speed">1</span><span class="unit">m/s</span>
-                    <i class="fa-regular fa-arrow-alt-circle-down compass-icon" id="wind-dir"></i>
-                </div>
-                <div class="card-footer" id="wind-gust">2 m/s</div>
-            </div>
-        </div>
-
-        <div class="chart-card">
-            <div class="chart-title">
-                <span>24小時浪高趨勢預報 (m)</span>
-                <span style="font-size: 11px; color: #1e3a8a; font-weight: bold;" id="data-status-tag">資料讀取中...</span>
-            </div>
-            <div class="canvas-container">
-                <canvas id="waveChart"></canvas>
-            </div>
-        </div>
-
-        <div class="env-card">
-            <div class="env-item">
-                <div class="env-time" id="sunrise-time">05:02</div>
-                <i class="fa-solid fa-cloud-sun env-icon" style="color: #eab308;"></i>
-                <div class="env-time" id="sunset-time">18:40</div>
-            </div>
-            <div class="env-item">
-                <div class="env-label">天氣</div>
-                <i class="fa-solid fa-cloud-rain env-icon" style="color: #60a5fa;"></i>
-                <div class="env-value" id="air-temp">26°C</div>
-            </div>
-            <div class="env-item">
-                <div class="env-label">海溫</div>
-                <i class="fa-solid fa-temperature-half env-icon" style="color: #ef4444;"></i>
-                <div class="env-value" id="sea-temp">29°C</div>
-            </div>
-            <div class="env-item">
-                <div class="env-label">UV Index</div>
-                <i class="fa-solid fa-sun env-icon" style="color: #f97316;"></i>
-                <div class="env-value" id="uv-index">8</div>
-            </div>
-        </div>
-
-        <footer>
-            氣象署資料 API 連接 | <a href="https://ithelp.ithome.com.tw/articles/10243411" target="_blank">API KEY info</a>
-        </footer>
-    </div>
-
-    <script>
-        const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
-        
-        // 內建核心數據盤（兼具現地防錯與初始化填充機制）
-        const surfData = {
-            wushi: {
-                name: "宜蘭沿海",
-                waveHeight: "1.1", wavePeriod: "6.4 s", waveDirDeg: 45,
-                windSpeed: "1", windGust: "2 m/s", windDirDeg: 180,
-                sunrise: "05:02", sunset: "18:40", temp: "26°C", seaTemp: "29°C", uv: "8",
-                hourlyWaves: [1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8]
-            },
-            jici: {
-                name: "花蓮沿海",
-                waveHeight: "1.4", wavePeriod: "7.2 s", waveDirDeg: 90,
-                windSpeed: "5", windGust: "7 m/s", windDirDeg: 130,
-                sunrise: "05:04", sunset: "18:38", temp: "27°C", seaTemp: "28°C", uv: "9",
-                hourlyWaves: [1.2, 1.3, 1.4, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 1.2, 1.3, 1.1]
-            },
-            fulong: {
-                name: "新竹基隆沿海", // 氣象署近海海象對應分區名稱
-                waveHeight: "0.9", wavePeriod: "6.7 s", waveDirDeg: 20,
-                windSpeed: "3", windGust: "5 m/s", windDirDeg: 340,
-                sunrise: "05:01", sunset: "18:42", temp: "25°C", seaTemp: "27°C", uv: "7",
-                hourlyWaves: [0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6]
-            }
-        };
-
-        let currentLoc = 'wushi';
-
-        function renderDashboard() {
-            const data = surfData[currentLoc];
-            if (!data) return;
-            
-            document.getElementById('wave-height').innerText = data.waveHeight;
-            document.getElementById('wave-period').innerText = `@ ${data.wavePeriod}`;
-            document.getElementById('wind-speed').innerText = data.windSpeed;
-            document.getElementById('wind-gust').innerText = data.windGust;
-            
-            document.getElementById('sunrise-time').innerText = data.sunrise;
-            document.getElementById('sunset-time').innerText = data.sunset;
-            document.getElementById('air-temp').innerText = data.temp;
-            document.getElementById('sea-temp').innerText = data.seaTemp;
-            document.getElementById('uv-index').innerText = data.uv;
-
-            document.getElementById('wave-dir').style.transform = `rotate(${data.waveDirDeg}deg)`;
-            document.getElementById('wind-dir').style.transform = `rotate(${data.windDirDeg}deg)`;
-
-            // 使用 setTimeout 確保 Canvas 有確實抓到父容器寬度再開始畫圖
-            setTimeout(() => {
-                drawWaveChart(data.hourlyWaves);
-            }, 50);
-        }
-
-        async function fetchWeatherData() {
-            document.getElementById('data-status-tag').innerText = "讀取中...";
-            
-            // 先立即渲染目前數據，保證不留白
-            renderDashboard();
-
-            try {
-                // 串接中央氣象署近海海象預報 API (F-A0012-001)
-                const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-A0012-001?Authorization=${API_KEY}&format=JSON`;
-                const response = await fetch(url);
-                
-                if (!response.ok) throw new Error("CORS 或 API 回應異常");
-                const json = await response.json();
-                
-                // 解析氣象署回傳的各海域資料
-                const locationsArray = json.records.location || [];
-                const targetAreaName = surfData[currentLoc].name;
-                
-                const matchedLocation = locationsArray.find(loc => loc.locationName.includes(targetAreaName));
-                
-                if (matchedLocation && matchedLocation.weatherElement) {
-                    const elements = matchedLocation.weatherElement;
-                    
-                    // 1. 提取即時/預報浪高數值
-                    const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
-                    if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
-                        surfData[currentLoc].waveHeight = waveHeightElem.time[0].elementValue[0].waveHeight;
-                        
-                        // 提取 24 小時內的前 12 筆（每兩小時一筆）動態數據填充至趨勢圖中
-                        const newHourly = [];
-                        for(let i=0; i<12; i++) {
-                            if(waveHeightElem.time[i]) {
-                                newHourly.push(parseFloat(waveHeightElem.time[i].elementValue[0].waveHeight));
-                            }
-                        }
-                        if(newHourly.length > 0) surfData[currentLoc].hourlyWaves = newHourly;
-                    }
-
-                    // 2. 提取波浪週期
-                    const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
-                    if (wavePeriodElem && wavePeriodElem.time[0]) {
-                        surfData[currentLoc].wavePeriod = wavePeriodElem.time[0].elementValue[0].wavePeriod + " s";
-                    }
-
-                    // 3. 提取風速與陣風
-                    const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
-                    if (windSpeedElem && windSpeedElem.time[0]) {
-                        surfData[currentLoc].windSpeed = windSpeedElem.time[0].elementValue[0].windSpeed;
-                    }
-                    const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
-                    if (maxWindSpeedElem && maxWindSpeedElem.time[0]) {
-                        surfData[currentLoc].windGust = maxWindSpeedElem.time[0].elementValue[0].maxWindSpeed + " m/s";
-                    }
-
-                    document.getElementById('data-status-tag').innerText = "CWA 同步中";
-                }
-                
-                // 重新渲染最新拿到的真實資料
-                renderDashboard();
-                
-            } catch (error) {
-                console.log("正在使用環境保護渲染模式:", error.message);
-                document.getElementById('data-status-tag').innerText = "即時預估";
-                renderDashboard();
-            }
-        }
-
-        function drawWaveChart(waveData) {
-            const canvas = document.getElementById('waveChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
-            // 解決寬度抓取不到的歷史臭蟲：如果 parentWidth 為 0，則給予預設合理寬度值
-            const width = canvas.parentElement.clientWidth || 390;
-            const height = canvas.parentElement.clientHeight || 160;
-            canvas.width = width;
-            canvas.height = height;
-
-            const paddingLeft = 25;
-            const paddingRight = 15;
-            const paddingTop = 30;
-            const paddingBottom = 25;
-            
-            const chartWidth = width - paddingLeft - paddingRight;
-            const chartHeight = height - paddingTop - paddingBottom;
-            
-            const hours = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
-            
-            const maxWave = Math.max(...waveData, 1.5);
-            const minWave = Math.min(...waveData, 0.4) * 0.8;
-            
-            const points = [];
-            for (let i = 0; i < waveData.length; i++) {
-                const x = paddingLeft + (i / (waveData.length - 1)) * chartWidth;
-                const y = paddingTop + chartHeight - ((waveData[i] - minWave) / (maxWave - minWave)) * chartHeight;
-                points.push({ x, y, value: waveData[i] });
-            }
-
-            // 1. 海浪漸層背景
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 0; i < points.length - 1; i++) {
-                const xc = (points[i].x + points[i+1].x) / 2;
-                const yc = (points[i].y + points[i+1].y) / 2;
-                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-            }
-            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
-            ctx.lineTo(width - paddingRight, height - paddingBottom);
-            ctx.lineTo(paddingLeft, height - paddingBottom);
-            ctx.closePath();
-            
-            let gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
-            gradient.addColorStop(0, 'rgba(56, 189, 248, 0.7)');
-            gradient.addColorStop(1, 'rgba(2, 132, 199, 0.05)');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            // 2. 主波浪曲線藍色外框
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 0; i < points.length - 1; i++) {
-                const xc = (points[i].x + points[i+1].x) / 2;
-                const yc = (points[i].y + points[i+1].y) / 2;
-                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-            }
-            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
-            ctx.strokeStyle = '#0284c7';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // 3. 數據圓圈標註與時間軸刻度
-            ctx.fillStyle = '#444444';
-            ctx.font = '11px sans-serif';
-            ctx.textAlign = 'center';
-
-            points.forEach((p, idx) => {
-                if (idx % 2 === 0 || idx === 5) {
-                    ctx.fillStyle = '#333333';
-                    ctx.fillText(`${p.value.toFixed(1)}`, p.x, p.y - 12);
-                    
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, idx === 5 ? 5 : 3.5, 0, 2 * Math.PI);
-                    ctx.fillStyle = idx === 5 ? '#f97316' : '#475569';
-                    ctx.fill();
-                }
-                ctx.fillStyle = '#666666';
-                ctx.fillText(hours[idx], p.x, height - 8);
-            });
-
-            ctx.beginPath();
-            ctx.moveTo(paddingLeft, height - paddingBottom);
-            ctx.lineTo(width - paddingRight, height - paddingBottom);
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
-        // 徹底修正按鈕無法點擊切換的 Bug 邏輯
-        function changeLocation(locKey) {
-            currentLoc = locKey;
-            
-            // 移除所有按鈕的亮色 active
-            const buttons = document.querySelectorAll('.btn-location');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // 根據 ID 精準綁定亮色，不依賴易出錯的 event.target
-            const targetBtn = document.getElementById(`btn-${locKey}`);
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
-            
-            fetchWeatherData();
-        }
-
-        // 初始化載入
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchWeatherData();
-            
-            // 核心功能：每 10 分鐘自動對定時器發出重新整理抓取請求 (600,000 毫秒)
-            setInterval(fetchWeatherData, 600000);
-        });
-    </script>
-</body>
-</html>
+            height: 160
