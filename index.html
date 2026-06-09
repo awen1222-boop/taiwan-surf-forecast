@@ -2,20 +2,23 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>工程師速算工具 V2</title>
+    <title>硬體工程師速算工具</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.6; color: #333; }
+        .container { max-width: 800px; margin: auto; }
         .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; }
-        input { width: 90px; padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; }
+        h1 { text-align: center; color: #2c3e50; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
+        input { width: 80px; padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; transition: background 0.3s; }
         button:hover { background-color: #2980b9; }
         .res { font-weight: bold; color: #e67e22; }
     </style>
 </head>
 <body>
 
-    <h1>硬體工程師速算工具 V2</h1>
+<div class="container">
+    <h1>硬體工程師速算工具</h1>
 
     <div class="card">
         <h2>1. 分壓計算 (Vout)</h2>
@@ -28,21 +31,21 @@
 
     <div class="card">
         <h2>2. 加熱片功率推算 (P=VI, V=IR)</h2>
-        輸入任意兩項進行推算：<br>
+        <small>請輸入任意兩項進行推算：</small><br>
         P (W): <input type="number" id="p_p" placeholder="W">
         V (V): <input type="number" id="p_v" placeholder="V">
         I (A): <input type="number" id="p_i" placeholder="A">
         R (Ω): <input type="number" id="p_r" placeholder="Ω">
         <button onclick="calcHeat()">推算</button>
-        <p id="heat_res" class="res">請輸入數值</p>
+        <p id="heat_res" class="res">請輸入任意兩項數值</p>
     </div>
 
     <div class="card">
         <h2>3. 電池續航計算</h2>
         容量 (mAh): <input type="number" id="bat_cap" placeholder="mAh">
         電壓 (V): <input type="number" id="bat_v" placeholder="V">
-        負載功率 (W): <input type="number" id="bat_p" placeholder="W">
-        <button onclick="calcBattery()">計算預估時數</button>
+        功率 (W): <input type="number" id="bat_p" placeholder="W">
+        <button onclick="calcBattery()">計算時數</button>
         <p>預估時數 = <span id="bat_res" class="res">0</span> 小時</p>
     </div>
 
@@ -56,38 +59,52 @@
 
     <div class="card">
         <h2>5. 長度與歐姆定律</h2>
-        <input type="number" id="len_val" placeholder="長度">
+        <input type="number" id="len_val" placeholder="數值">
         <select id="len_unit"><option value="mil_mm">mil→mm</option><option value="mm_mil">mm→mil</option><option value="ps_inch">ps→inch</option></select>
         <button onclick="calcLength()">轉換長度</button>
         <p>結果 = <span id="len_res" class="res">0</span></p>
     </div>
+</div>
 
-    <script>
-        function calcVoltage() {
-            let vin = document.getElementById('vin').value, ru = document.getElementById('ru').value, rd = document.getElementById('rd').value;
-            document.getElementById('vout_res').innerText = (vin * rd / (Number(ru) + Number(rd))).toFixed(3);
-        }
-        function calcHeat() {
-            let p = document.getElementById('p_p').value, v = document.getElementById('p_v').value, i = document.getElementById('p_i').value, r = document.getElementById('p_r').value;
-            if (v && i) { p = v*i; r = v/i; }
-            else if (v && r) { p = v*v/r; i = v/r; }
-            else if (p && v) { i = p/v; r = v*v/p; }
-            document.getElementById('heat_res').innerText = `P=${p.toFixed(2)}W, I=${i.toFixed(3)}A, R=${r.toFixed(2)}Ω`;
-        }
-        function calcBattery() {
-            let cap = document.getElementById('bat_cap').value, v = document.getElementById('bat_v').value, p = document.getElementById('bat_p').value;
-            document.getElementById('bat_res').innerText = ((cap/1000 * v) / p).toFixed(2);
-        }
-        function calcCap() {
-            let v = document.getElementById('cap_val').value, u = document.getElementById('cap_unit').value;
-            let p = (u == 'pF') ? v : (u == 'nF') ? v*1000 : v*1000000;
-            document.getElementById('cap_res').innerText = `${p} pF / ${(p/1000).toFixed(3)} nF / ${(p/1000000).toFixed(6)} uF`;
-        }
-        function calcLength() {
-            let v = document.getElementById('len_val').value, u = document.getElementById('len_unit').value;
-            let res = (u == 'mil_mm') ? v*0.0254 : (u == 'mm_mil') ? v/0.0254 : v*0.006;
-            document.getElementById('len_res').innerText = res.toFixed(4);
-        }
-    </script>
+<script>
+    function calcVoltage() {
+        let vin = parseFloat(document.getElementById('vin').value), ru = parseFloat(document.getElementById('ru').value), rd = parseFloat(document.getElementById('rd').value);
+        document.getElementById('vout_res').innerText = (vin * rd / (ru + rd)).toFixed(3);
+    }
+
+    function calcHeat() {
+        let p = parseFloat(document.getElementById('p_p').value);
+        let v = parseFloat(document.getElementById('p_v').value);
+        let i = parseFloat(document.getElementById('p_i').value);
+        let r = parseFloat(document.getElementById('p_r').value);
+
+        if (!isNaN(p) && !isNaN(v)) { i = p / v; r = (v * v) / p; }
+        else if (!isNaN(p) && !isNaN(i)) { v = p / i; r = p / (i * i); }
+        else if (!isNaN(p) && !isNaN(r)) { v = Math.sqrt(p * r); i = Math.sqrt(p / r); }
+        else if (!isNaN(v) && !isNaN(i)) { p = v * i; r = v / i; }
+        else if (!isNaN(v) && !isNaN(r)) { p = (v * v) / r; i = v / r; }
+        else if (!isNaN(i) && !isNaN(r)) { p = (i * i) * r; v = i * r; }
+        else { alert("請輸入任意兩項數值！"); return; }
+        
+        document.getElementById('heat_res').innerText = `結果：P=${p.toFixed(2)}W, V=${v.toFixed(2)}V, I=${i.toFixed(3)}A, R=${r.toFixed(2)}Ω`;
+    }
+
+    function calcBattery() {
+        let cap = parseFloat(document.getElementById('bat_cap').value), v = parseFloat(document.getElementById('bat_v').value), p = parseFloat(document.getElementById('bat_p').value);
+        document.getElementById('bat_res').innerText = ((cap / 1000 * v) / p).toFixed(2);
+    }
+
+    function calcCap() {
+        let v = parseFloat(document.getElementById('cap_val').value), u = document.getElementById('cap_unit').value;
+        let p = (u == 'pF') ? v : (u == 'nF') ? v * 1000 : v * 1000000;
+        document.getElementById('cap_res').innerText = `${p} pF / ${(p/1000).toFixed(3)} nF / ${(p/1000000).toFixed(6)} uF`;
+    }
+
+    function calcLength() {
+        let v = parseFloat(document.getElementById('len_val').value), u = document.getElementById('len_unit').value;
+        let res = (u == 'mil_mm') ? v * 0.0254 : (u == 'mm_mil') ? v / 0.0254 : v * 0.006;
+        document.getElementById('len_res').innerText = res.toFixed(4);
+    }
+</script>
 </body>
 </html>
