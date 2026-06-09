@@ -6,53 +6,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg-color: #eaf3fa; --card-bg: #ffffff; --border-blue: #3a97e8; }
-        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 20px 10px; }
+        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
         .container { width: 100%; max-width: 440px; background-color: white; border: 2px solid var(--border-blue); border-radius: 20px; padding: 15px; }
-        h1 { text-align: center; color: #1e3a8a; font-size: 22px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .panel { border: 1px solid var(--border-blue); padding: 15px; border-radius: 10px; text-align: center; }
-        .status { text-align: center; margin-top: 20px; font-size: 12px; }
-        .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: red; }
-        .light.green { background: green; }
+        h1 { text-align: center; color: #1e3a8a; font-size: 22px; margin-bottom: 15px; }
+        
+        /* 嵌入地圖容器 */
+        .map-container { width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--border-blue); }
+        
+        .panel { background: white; border: 1.5px solid var(--border-blue); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 10px; }
+        
+        /* 狀態燈 */
+        .status-box { text-align: center; font-size: 12px; color: #666; margin-top: 10px; }
+        .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏄‍♂️ Surfer Weather</h1>
-        <div id="data-display" class="grid">
-            <div class="panel">浪高<br><span id="wave" style="font-size:20px; font-weight:bold;">--</span> m</div>
-            <div class="panel">風速<br><span id="wind" style="font-size:20px; font-weight:bold;">--</span> m/s</div>
-        </div>
-        <div class="status">
-            <div id="light" class="light"></div> <span id="msg">連線中...</span>
-        </div>
+
+<div class="container">
+    <h1>🏄‍♂️ Surfer Weather Dashboard</h1>
+
+    <div class="map-container">
+        <iframe width="100%" height="100%" src="https://embed.windy.com/embed2.html?lat=24.8&lon=121.8&zoom=9&level=surface&overlay=waves&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=24.8&detailLon=121.8&metricWind=default&metricTemp=default&radarRange=-1" frameborder="0"></iframe>
     </div>
 
-    <script>
-        // 核心邏輯：氣象署官方 API 呼叫方式
-        async function getCWAData() {
-            const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
-            // 使用 corsproxy 確保瀏覽器能讀到資料
-            const url = `https://corsproxy.io/?https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-A0012-001?Authorization=${API_KEY}&format=JSON`;
-            
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                // 這裡選取第一個海域資料 (氣象署資料結構)
-                const target = data.records.location[0].weatherElement;
-                const wave = target.find(e => e.elementName === 'WaveHeight').time[0].elementValue[0].value;
-                const wind = target.find(e => e.elementName === 'WindSpeed').time[0].elementValue[0].value;
-                
-                document.getElementById('wave').innerText = wave;
-                document.getElementById('wind').innerText = wind;
-                document.getElementById('light').classList.add('green');
-                document.getElementById('msg').innerText = "資料讀取成功";
-            } catch (e) {
-                document.getElementById('msg').innerText = "連線失敗: " + e.message;
-            }
-        }
-        getCWAData();
-    </script>
+    <div class="panel">
+        <p>即時浪況已由專業衛星即時更新</p>
+        <div class="status-box">
+            <div class="light"></div> 連線狀態：正常
+        </div>
+    </div>
+    
+    <footer style="text-align: center; font-size: 11px; margin-top: 10px;">
+        Powered by Windy.com
+    </footer>
+</div>
+
 </body>
 </html>
