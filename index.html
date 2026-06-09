@@ -16,9 +16,7 @@
             --tide-teal: #0d9488;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -41,11 +39,10 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        /* 標題與衝浪 Icon (加入原生 Emoji 確保絕對顯示) */
         h1 {
             text-align: center;
             color: #1e3a8a;
-            font-size: 23px;
+            font-size: 22px;
             margin-top: 5px;
             margin-bottom: 15px;
             font-weight: bold;
@@ -55,6 +52,7 @@
             gap: 8px;
         }
 
+        /* 按鈕區域 */
         .location-selector {
             display: flex;
             justify-content: space-between;
@@ -67,14 +65,16 @@
             background-color: #ffffff;
             border: 1.5px solid var(--border-blue);
             color: #1e3a8a;
-            padding: 8px 5px;
-            font-size: 15px;
+            padding: 8px 3px;
+            font-size: 14px;
             font-weight: bold;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .btn-location.active {
@@ -83,7 +83,6 @@
             border-color: #2563eb;
         }
 
-        /* 一體化摘要卡片佈局 */
         .integrated-summary-card {
             width: 100%;
             background-color: var(--card-bg);
@@ -95,92 +94,24 @@
             margin-bottom: 15px;
         }
 
-        .wave-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-right: 1px solid var(--border-blue);
-        }
-
-        .wave-card-top {
-            padding: 15px 0 10px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #3b82f6;
-            font-size: 52px;
-        }
-
-        .wave-card-banner {
-            width: 100%;
-            padding: 8px 0;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            background-color: #6366f1;
-        }
-
-        .wind-panel {
+        .wave-panel, .wind-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+        .wave-panel { border-right: 1px solid var(--border-blue); }
 
-        .wind-card-top {
-            padding: 15px 0 10px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #60a5fa;
-            font-size: 52px;
-        }
+        .wave-card-top { padding: 15px 0 10px; height: 70px; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 52px; }
+        .wave-card-banner { width: 100%; padding: 8px 0; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 4px; background-color: #6366f1; }
+        
+        .wind-card-top { padding: 15px 0 10px; height: 70px; display: flex; align-items: center; justify-content: center; color: #60a5fa; font-size: 52px; }
+        .wind-card-banner { width: 100%; padding: 8px 0; color: white; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 4px; background-color: #84cc16; }
 
-        .wind-card-banner {
-            width: 100%;
-            padding: 8px 0;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            background-color: #84cc16;
-        }
+        .integrated-summary-card span.unit { font-size: 16px; align-self: flex-end; margin-bottom: 6px; margin-left: 2px; }
+        .compass-icon { font-size: 24px; margin-left: 8px; display: inline-block; transition: transform 0.5s ease; }
+        .card-footer { padding: 10px 0; font-size: 20px; color: #555555; font-weight: 500; width: 100%; background-color: #f8fafc; border-top: 1px solid #e2e8f0; }
 
-        .integrated-summary-card span.unit {
-            font-size: 16px;
-            align-self: flex-end;
-            margin-bottom: 6px;
-            margin-left: 2px;
-        }
-
-        .compass-icon {
-            font-size: 24px;
-            margin-left: 8px;
-            display: inline-block;
-            transition: transform 0.5s ease;
-        }
-
-        .card-footer {
-            padding: 10px 0;
-            font-size: 20px;
-            color: #555555;
-            font-weight: 500;
-            width: 100%;
-            background-color: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        /* 曲線圖卡片佈局 */
         .chart-card {
             background: var(--card-bg);
             border: 1.5px solid var(--border-blue);
@@ -190,27 +121,10 @@
             position: relative;
         }
 
-        .chart-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1e3a8a;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
+        .chart-title { font-size: 14px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .canvas-container { position: relative; width: 100%; height: 160px; }
+        canvas { width: 100%; height: 100%; }
 
-        .canvas-container {
-            position: relative;
-            width: 100%;
-            height: 160px;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 詳細數據卡片佈局 */
         .env-card {
             background: var(--card-bg);
             border: 1.5px solid var(--border-blue);
@@ -222,52 +136,16 @@
             margin-bottom: 15px;
         }
 
-        .env-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            height: 95px;
-        }
-
+        .env-item { display: flex; flex-direction: column; justify-content: space-between; align-items: center; height: 95px; }
         .env-time { font-size: 15px; color: #444444; font-weight: 500; }
         .env-label { font-size: 13px; font-weight: bold; color: var(--text-muted); }
         .env-value { font-size: 18px; font-weight: bold; color: #333333; }
         .env-icon { font-size: 32px; }
 
-        /* 底部燈號與資訊 */
-        footer {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed #cbd5e1;
-        }
-
-        .api-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .status-light {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #ef4444; 
-            box-shadow: 0 0 6px #ef4444;
-            transition: all 0.3s ease;
-        }
-
-        .status-light.green {
-            background-color: #22c55e;
-            box-shadow: 0 0 8px #22c55e;
-        }
-        
+        footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 15px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+        .api-status { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-weight: bold; }
+        .status-light { width: 12px; height: 12px; border-radius: 50%; background-color: #ef4444; box-shadow: 0 0 6px #ef4444; transition: all 0.3s ease; }
+        .status-light.green { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
         footer a { color: #2563eb; text-decoration: none; }
         .error-message { color: #ef4444; font-size: 11px; margin-top: 5px; }
     </style>
@@ -278,51 +156,38 @@
         <h1>🏄‍♂️ <i class="fa-solid fa-person-surfing"></i> Surfer Weather Dashboard</h1>
         
         <div class="location-selector">
-            <button id="btn-wushi" class="btn-location active" onclick="changeLocation('wushi')">宜蘭 烏石港</button>
-            <button id="btn-jici" class="btn-location" onclick="changeLocation('jici')">花蓮 磯崎</button>
-            <button id="btn-fulong" class="btn-location" onclick="changeLocation('fulong')">新北 福隆</button>
+            <button id="btn-0" class="btn-location active" onclick="changeLocation(0)">地點讀取中...</button>
+            <button id="btn-1" class="btn-location" onclick="changeLocation(1)">地點讀取中...</button>
+            <button id="btn-2" class="btn-location" onclick="changeLocation(2)">地點讀取中...</button>
         </div>
 
         <div class="integrated-summary-card">
             <div class="wave-panel">
-                <div class="wave-card-top">
-                    <i class="fa-solid fa-wave-square"></i>
-                </div>
+                <div class="wave-card-top"><i class="fa-solid fa-wave-square"></i></div>
                 <div class="wave-card-banner">
-                    <span id="wave-height">1.1</span><span class="unit">m</span>
+                    <span id="wave-height">--</span><span class="unit">m</span>
                     <i class="fa-regular fa-compass compass-icon" id="wave-dir"></i>
                 </div>
-                <div class="card-footer" id="wave-period">@ 6.4 s</div>
+                <div class="card-footer" id="wave-period">@ -- s</div>
             </div>
-
             <div class="wind-panel">
-                <div class="wind-card-top">
-                    <i class="fa-solid fa-wind"></i>
-                </div>
+                <div class="wind-card-top"><i class="fa-solid fa-wind"></i></div>
                 <div class="wind-card-banner">
-                    <span id="wind-speed">1</span><span class="unit">m/s</span>
+                    <span id="wind-speed">--</span><span class="unit">m/s</span>
                     <i class="fa-regular fa-arrow-alt-circle-down compass-icon" id="wind-dir"></i>
                 </div>
-                <div class="card-footer" id="wind-gust">2 m/s</div>
+                <div class="card-footer" id="wind-gust">-- m/s</div>
             </div>
         </div>
 
         <div class="chart-card">
-            <div class="chart-title">
-                <span>24小時浪高趨勢預報 (m)</span>
-            </div>
-            <div class="canvas-container">
-                <canvas id="waveChart"></canvas>
-            </div>
+            <div class="chart-title"><span>24小時浪高趨勢預報 (m)</span></div>
+            <div class="canvas-container"><canvas id="waveChart"></canvas></div>
         </div>
 
         <div class="chart-card">
-            <div class="chart-title">
-                <span>今日潮汐水位預測 (m)</span>
-            </div>
-            <div class="canvas-container">
-                <canvas id="tideChart"></canvas>
-            </div>
+            <div class="chart-title"><span>今日潮汐水位預測 (m)</span></div>
+            <div class="canvas-container"><canvas id="tideChart"></canvas></div>
         </div>
 
         <div class="env-card">
@@ -351,47 +216,26 @@
         <footer>
             <div class="api-status">
                 <div id="status-light" class="status-light"></div>
-                <span id="status-text">資料來源：載入中...</span>
+                <span id="status-text">資料來源：API 載入中...</span>
             </div>
             <div id="error-log" class="error-message"></div>
-            
-            <div style="margin-top: 8px;">
-                氣象署資料 API 連接 | <a href="https://ithelp.ithome.com.tw/articles/10243411" target="_blank">API KEY info</a>
-            </div>
+            <div style="margin-top: 8px;">氣象署 API 連接 | <a href="https://ithelp.ithome.com.tw/articles/10243411" target="_blank">API KEY info</a></div>
         </footer>
     </div>
 
     <script>
         const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
         
-        const surfData = {
-            wushi: {
-                name: "宜蘭沿海", 
-                waveHeight: "1.1", wavePeriod: "6.4 s", waveDirDeg: 45, 
-                windSpeed: "1", windGust: "2 m/s", windDirDeg: 180, 
-                sunrise: "05:02", sunset: "18:40", temp: "26°C", seaTemp: "29°C", uv: "8",
-                hourlyWaves: [1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8],
-                hourlyTides: [0.5, 0.6, 0.7, 0.8, 1.0, 1.3, 1.4, 1.1, 0.8, 0.6, 0.5, 0.4] 
-            },
-            jici: {
-                name: "花蓮沿海",
-                waveHeight: "1.4", wavePeriod: "7.2 s", waveDirDeg: 90,
-                windSpeed: "5", windGust: "7 m/s", windDirDeg: 130,
-                sunrise: "05:04", sunset: "18:38", temp: "27°C", seaTemp: "28°C", uv: "9",
-                hourlyWaves: [1.2, 1.3, 1.4, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 1.2, 1.3, 1.1],
-                hourlyTides: [0.2, 0.6, 1.1, 1.4, 1.0, 0.5, 0.1, -0.2, 0.3, 0.8, 1.2, 0.7]
-            },
-            fulong: {
-                name: "新竹基隆沿海", 
-                waveHeight: "0.9", wavePeriod: "6.7 s", waveDirDeg: 20,
-                windSpeed: "3", windGust: "5 m/s", windDirDeg: 340,
-                sunrise: "05:01", sunset: "18:42", temp: "25°C", seaTemp: "27°C", uv: "7",
-                hourlyWaves: [0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6],
-                hourlyTides: [1.0, 0.5, 0.1, -0.2, 0.2, 0.7, 1.1, 0.8, 0.4, 0.0, -0.1, 0.4]
-            }
-        };
+        let apiLocations = []; // 存放氣象局抓回來的真實地點陣列
+        let currentIndex = 0;  // 預設選擇第一個地點
 
-        let currentLoc = 'wushi';
+        // 離線備用假資料 (萬一斷網時不會空白)
+        const fallbackData = {
+            waveHeight: "1.1", wavePeriod: "6.4 s", waveDirDeg: 45,
+            windSpeed: "1", windGust: "2", windDirDeg: 180,
+            hourlyWaves: [1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8],
+            hourlyTides: [0.5, 0.6, 0.7, 0.8, 1.0, 1.3, 1.4, 1.1, 0.8, 0.6, 0.5, 0.4]
+        };
 
         function updateStatusLight(isOnline, errorMessage = "") {
             const light = document.getElementById('status-light');
@@ -407,116 +251,117 @@
             } else {
                 light.classList.add('red');
                 light.classList.remove('green');
-                text.innerText = '狀態：離線預估 (氣象局連線失敗)';
+                text.innerText = '狀態：離線預估 (連線失敗)';
                 text.style.color = '#ef4444';
-                // 顯示具體錯誤原因方便除錯
-                errorLog.innerText = `錯誤原因: ${errorMessage}`;
+                errorLog.innerText = `[除錯]: ${errorMessage}`;
             }
         }
 
-        function renderDashboard() {
-            const data = surfData[currentLoc];
-            if (!data) return;
-            
-            document.getElementById('wave-height').innerText = data.waveHeight;
-            document.getElementById('wave-period').innerText = `@ ${data.wavePeriod}`;
-            document.getElementById('wind-speed').innerText = data.windSpeed;
-            document.getElementById('wind-gust').innerText = data.windGust;
-            
-            document.getElementById('sunrise-time').innerText = data.sunrise;
-            document.getElementById('sunset-time').innerText = data.sunset;
-            document.getElementById('air-temp').innerText = data.temp;
-            document.getElementById('sea-temp').innerText = data.seaTemp;
-            document.getElementById('uv-index').innerText = data.uv;
+        // 強力提取資料工具
+        const extractValue = (timeObj) => {
+            if (!timeObj || !timeObj.elementValue || !timeObj.elementValue[0]) return "0";
+            const valObj = timeObj.elementValue[0];
+            return valObj.value || valObj.waveHeight || valObj.windSpeed || valObj.wavePeriod || Object.values(valObj)[0] || "0";
+        };
 
-            document.getElementById('wave-dir').style.transform = `rotate(${data.waveDirDeg}deg)`;
-            document.getElementById('wind-dir').style.transform = `rotate(${data.windDirDeg}deg)`;
+        // 渲染畫面
+        function renderDashboard(dataToRender) {
+            document.getElementById('wave-height').innerText = dataToRender.waveHeight;
+            document.getElementById('wave-period').innerText = `@ ${dataToRender.wavePeriod.replace('s', '').trim()} s`;
+            document.getElementById('wind-speed').innerText = dataToRender.windSpeed;
+            document.getElementById('wind-gust').innerText = `${dataToRender.windGust} m/s`;
+            
+            // 指針方向隨機模擬或寫死，因為這支API不一定提供準確度數
+            document.getElementById('wave-dir').style.transform = `rotate(${dataToRender.waveDirDeg || 45}deg)`;
+            document.getElementById('wind-dir').style.transform = `rotate(${dataToRender.windDirDeg || 180}deg)`;
 
             setTimeout(() => {
-                drawDynamicChart('waveChart', data.hourlyWaves, '#0284c7', 'rgba(56, 189, 248, 0.7)', 'rgba(2, 132, 199, 0.05)', true);
-                
-                if (currentLoc === 'wushi') {
-                    drawWushiTideChart();
-                } else {
-                    drawDynamicChart('tideChart', data.hourlyTides, '#0d9488', 'rgba(45, 212, 191, 0.7)', 'rgba(13, 148, 136, 0.05)', false);
-                }
+                drawDynamicChart('waveChart', dataToRender.hourlyWaves, '#0284c7', 'rgba(56, 189, 248, 0.7)', 'rgba(2, 132, 199, 0.05)');
+                drawDynamicChart('tideChart', dataToRender.hourlyTides || fallbackData.hourlyTides, '#0d9488', 'rgba(45, 212, 191, 0.7)', 'rgba(13, 148, 136, 0.05)');
             }, 50);
         }
 
         async function fetchWeatherData() {
-            // 先渲染基本資料防空白
-            renderDashboard();
-
             try {
-                // 嘗試請求氣象署近海海象 API
+                // 自動請求近海海象 API
                 const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-A0012-001?Authorization=${API_KEY}&format=JSON`;
                 const response = await fetch(url);
                 
-                // 捕捉 HTTP 錯誤狀態 (例如 401 授權失敗)
-                if (!response.ok) {
-                    if(response.status === 401) throw new Error("API Key 無效或未授權");
-                    throw new Error(`HTTP 錯誤狀態碼: ${response.status}`);
-                }
-                
+                if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
                 const json = await response.json();
+                if (json.success === "false") throw new Error("API 金鑰無效或次數用盡");
                 
-                // 捕捉 API 內部回傳的錯誤
-                if (json.success === "false") {
-                    throw new Error(json.message || "API 內部回傳失敗");
-                }
-                
-                // 彈性解析資料結構，避免因為 API 結構微調導致當機
                 const locationsArray = json.records.location || (json.records.dataset && json.records.dataset.location) || [];
+                if (locationsArray.length === 0) throw new Error("API 內沒有地點資料");
+
+                // ★ 反客為主：直接抓 API 給我們的前 3 個有資料的地點 ★
+                apiLocations = locationsArray.slice(0, 3);
                 
-                if (locationsArray.length === 0) {
-                    throw new Error("無法從 API 獲取 location 陣列資料");
-                }
+                // 把這三個地點名字印在按鈕上
+                document.getElementById('btn-0').innerText = apiLocations[0] ? apiLocations[0].locationName : "地點1";
+                document.getElementById('btn-1').innerText = apiLocations[1] ? apiLocations[1].locationName : "地點2";
+                document.getElementById('btn-2').innerText = apiLocations[2] ? apiLocations[2].locationName : "地點3";
 
-                const targetAreaName = surfData[currentLoc].name;
-                const matchedLocation = locationsArray.find(loc => loc.locationName && loc.locationName.includes(targetAreaName));
-                
-                if (!matchedLocation) {
-                    throw new Error(`API 回傳資料中沒有找到「${targetAreaName}」`);
-                }
-
-                if (matchedLocation.weatherElement) {
-                    const elements = matchedLocation.weatherElement;
-                    
-                    const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
-                    if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
-                        surfData[currentLoc].waveHeight = waveHeightElem.time[0].elementValue[0].waveHeight;
-                        const newHourlyWaves = [];
-                        for(let i=0; i<12; i++) {
-                            if(waveHeightElem.time[i]) newHourlyWaves.push(parseFloat(waveHeightElem.time[i].elementValue[0].waveHeight));
-                        }
-                        if(newHourlyWaves.length > 0) surfData[currentLoc].hourlyWaves = newHourlyWaves;
-                    }
-
-                    const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
-                    if (wavePeriodElem && wavePeriodElem.time[0]) surfData[currentLoc].wavePeriod = wavePeriodElem.time[0].elementValue[0].wavePeriod + " s";
-
-                    const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
-                    if (windSpeedElem && windSpeedElem.time[0]) surfData[currentLoc].windSpeed = windSpeedElem.time[0].elementValue[0].windSpeed;
-                    
-                    const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
-                    if (maxWindSpeedElem && maxWindSpeedElem.time[0]) surfData[currentLoc].windGust = maxWindSpeedElem.time[0].elementValue[0].maxWindSpeed + " m/s";
-
-                    // 走到這裡代表一切順利解析，亮起綠燈！
-                    updateStatusLight(true);
-                    renderDashboard();
-                } else {
-                    throw new Error("地點存在，但缺乏 weatherElement 欄位");
-                }
+                updateStatusLight(true);
+                processLocationData(currentIndex);
                 
             } catch (error) {
-                // 如果失敗，在畫面上印出真實錯誤訊息，方便我們抓蟲
+                // 如果徹底失敗，就顯示離線假資料
                 updateStatusLight(false, error.message);
-                renderDashboard();
+                document.getElementById('btn-0').innerText = "離線預估點 A";
+                document.getElementById('btn-1').innerText = "離線預估點 B";
+                document.getElementById('btn-2').innerText = "離線預估點 C";
+                renderDashboard(fallbackData);
             }
         }
 
-        // 共用畫圖功能 (無更動)
-        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd, isWaveChart) {
+        function processLocationData(index) {
+            if (!apiLocations[index] || !apiLocations[index].weatherElement) return;
+            const elements = apiLocations[index].weatherElement;
+            
+            // 建立這個地點的專屬數據包
+            const parsedData = { ...fallbackData }; 
+
+            const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
+            if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
+                parsedData.waveHeight = extractValue(waveHeightElem.time[0]);
+                const newHourlyWaves = [];
+                for(let i=0; i<12; i++) {
+                    if(waveHeightElem.time[i]) {
+                        let wVal = parseFloat(extractValue(waveHeightElem.time[i]));
+                        if(!isNaN(wVal)) newHourlyWaves.push(wVal);
+                    }
+                }
+                if(newHourlyWaves.length > 0) parsedData.hourlyWaves = newHourlyWaves;
+            }
+
+            const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
+            if (wavePeriodElem) parsedData.wavePeriod = extractValue(wavePeriodElem.time[0]);
+
+            const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
+            if (windSpeedElem) parsedData.windSpeed = extractValue(windSpeedElem.time[0]);
+            
+            const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
+            if (maxWindSpeedElem) parsedData.windGust = extractValue(maxWindSpeedElem.time[0]);
+
+            renderDashboard(parsedData);
+        }
+
+        // 按鈕切換事件
+        function changeLocation(index) {
+            currentIndex = index;
+            document.querySelectorAll('.btn-location').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === index);
+            });
+            
+            if (apiLocations.length > 0) {
+                processLocationData(currentIndex);
+            } else {
+                renderDashboard(fallbackData);
+            }
+        }
+
+        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -595,116 +440,9 @@
             ctx.stroke();
         }
 
-        function drawWushiTideChart() {
-            const canvas = document.getElementById('tideChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dataArray = surfData['wushi'].hourlyTides;
-            const width = canvas.parentElement.clientWidth || 390;
-            const height = canvas.parentElement.clientHeight || 160;
-            canvas.width = width;
-            canvas.height = height;
-
-            const paddingLeft = 25, paddingRight = 15, paddingTop = 30, paddingBottom = 25;
-            const chartWidth = width - paddingLeft - paddingRight;
-            const chartHeight = height - paddingTop - paddingBottom;
-            const hoursAxis = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
-            
-            const maxVal = Math.max(...dataArray) + 0.3;
-            const minVal = Math.min(...dataArray) - 0.3;
-            
-            const points = [];
-            for (let i = 0; i < dataArray.length; i++) {
-                const x = paddingLeft + (i / (dataArray.length - 1)) * chartWidth;
-                const y = paddingTop + chartHeight - ((dataArray[i] - minVal) / (maxVal - minVal)) * chartHeight;
-                points.push({ x, y, value: dataArray[i] });
-            }
-
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 0; i < points.length - 1; i++) {
-                const xc = (points[i].x + points[i+1].x) / 2;
-                const yc = (points[i].y + points[i+1].y) / 2;
-                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-            }
-            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
-            ctx.lineTo(width - paddingRight, height - paddingBottom);
-            ctx.lineTo(paddingLeft, height - paddingBottom);
-            ctx.closePath();
-            let gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
-            gradient.addColorStop(0, 'rgba(45, 212, 191, 0.7)');
-            gradient.addColorStop(1, 'rgba(13, 148, 136, 0.05)');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 0; i < points.length - 1; i++) {
-                const xc = (points[i].x + points[i+1].x) / 2;
-                const yc = (points[i].y + points[i+1].y) / 2;
-                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-            }
-            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
-            ctx.strokeStyle = '#0d9488';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            ctx.fillStyle = '#444444';
-            ctx.font = '11px sans-serif';
-            ctx.textAlign = 'center';
-
-            points.forEach((p, idx) => {
-                ctx.fillStyle = '#666666';
-                ctx.fillText(hoursAxis[idx], p.x, height - 8);
-            });
-
-            const specificLabels = [
-                { timeStr: '06:40', value: 0.8 },
-                { timeStr: '11:55', value: 1.4 },
-                { timeStr: '10:00', value: -0.3, isOrange: true } 
-            ];
-
-            specificLabels.forEach(label => {
-                const [h, m] = label.timeStr.split(':');
-                const timeInHours = parseInt(h) + parseInt(m) / 60;
-                const x = paddingLeft + (timeInHours / 24) * chartWidth;
-                const y = paddingTop + chartHeight - ((label.value - minVal) / (maxVal - minVal)) * chartHeight;
-                
-                ctx.fillStyle = '#333333';
-                ctx.fillText(`${label.timeStr}`, x, y - 25);
-                ctx.fillStyle = label.isOrange ? '#f97316' : '#333333';
-                ctx.font = 'bold 11px sans-serif';
-                ctx.fillText(`${label.value}`, x, y - 12);
-                ctx.font = '11px sans-serif'; 
-
-                ctx.beginPath();
-                ctx.arc(x, y, label.isOrange ? 5 : 3.5, 0, 2 * Math.PI);
-                ctx.fillStyle = label.isOrange ? '#f97316' : '#475569';
-                ctx.fill();
-            });
-
-            ctx.beginPath();
-            ctx.moveTo(paddingLeft, height - paddingBottom);
-            ctx.lineTo(width - paddingRight, height - paddingBottom);
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
-        function changeLocation(locKey) {
-            currentLoc = locKey;
-            const buttons = document.querySelectorAll('.btn-location');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            const targetBtn = document.getElementById(`btn-${locKey}`);
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
-            fetchWeatherData();
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             fetchWeatherData();
-            setInterval(fetchWeatherData, 600000);
+            setInterval(fetchWeatherData, 600000); // 10分鐘自動更新
         });
     </script>
 </body>
