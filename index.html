@@ -2,99 +2,91 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>硬體工程師速算工具</title>
+    <title>工程師速算工具 V2</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { border-bottom: 2px solid #333; padding-bottom: 5px; }
-        input { width: 100px; padding: 5px; margin: 5px; }
-        button { padding: 5px 15px; cursor: pointer; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.5; }
+        .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; }
+        input { width: 90px; padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #2980b9; }
+        .res { font-weight: bold; color: #e67e22; }
     </style>
 </head>
 <body>
 
-    <h1>硬體工程師常用工具</h1>
+    <h1>硬體工程師速算工具 V2</h1>
 
     <div class="card">
         <h2>1. 分壓計算 (Vout)</h2>
         Vin: <input type="number" id="vin" placeholder="Vin"> 
-        R1: <input type="number" id="r1" placeholder="R1 (Ω)"> 
-        R2: <input type="number" id="r2" placeholder="R2 (Ω)">
-        <button onclick="calcVoltage()">計算</button>
-        <p>Vout = <span id="vout_res">0</span> V</p>
+        Ru: <input type="number" id="ru" placeholder="Ru (Ω)"> 
+        Rd: <input type="number" id="rd" placeholder="Rd (Ω)">
+        <button onclick="calcVoltage()">計算 Vout</button>
+        <p>Vout = <span id="vout_res" class="res">0</span> V</p>
     </div>
 
     <div class="card">
-        <h2>2. 功率計算 (P = V * I)</h2>
-        V: <input type="number" id="p_v" placeholder="V"> 
-        I: <input type="number" id="p_i" placeholder="I (A)">
-        <button onclick="calcPower()">計算</button>
-        <p>P = <span id="p_res">0</span> W</p>
+        <h2>2. 加熱片功率推算 (P=VI, V=IR)</h2>
+        輸入任意兩項進行推算：<br>
+        P (W): <input type="number" id="p_p" placeholder="W">
+        V (V): <input type="number" id="p_v" placeholder="V">
+        I (A): <input type="number" id="p_i" placeholder="A">
+        R (Ω): <input type="number" id="p_r" placeholder="Ω">
+        <button onclick="calcHeat()">推算</button>
+        <p id="heat_res" class="res">請輸入數值</p>
     </div>
 
     <div class="card">
-        <h2>3. 長度/時間換算</h2>
-        <input type="number" id="len_val" placeholder="數值">
-        <select id="len_unit">
-            <option value="mil_mm">mil 轉 mm</option>
-            <option value="mm_mil">mm 轉 mil</option>
-            <option value="inch_mm">inch 轉 mm</option>
-            <option value="ps_inch">ps 轉 inch (FR4, ~6 inch/ns)</option>
-        </select>
-        <button onclick="calcLength()">轉換</button>
-        <p>結果 = <span id="len_res">0</span></p>
+        <h2>3. 電池續航計算</h2>
+        容量 (mAh): <input type="number" id="bat_cap" placeholder="mAh">
+        電壓 (V): <input type="number" id="bat_v" placeholder="V">
+        負載功率 (W): <input type="number" id="bat_p" placeholder="W">
+        <button onclick="calcBattery()">計算預估時數</button>
+        <p>預估時數 = <span id="bat_res" class="res">0</span> 小時</p>
     </div>
 
     <div class="card">
-        <h2>4. 歐姆定律 (V=IR)</h2>
-        V: <input type="number" id="ohm_v" placeholder="V">
-        I: <input type="number" id="ohm_i" placeholder="I (A)">
-        R: <input type="number" id="ohm_r" placeholder="R (Ω)">
-        <button onclick="calcOhm()">計算 (請留空一項)</button>
+        <h2>4. 電容值換算</h2>
+        數值: <input type="number" id="cap_val" placeholder="數值">
+        單位: <select id="cap_unit"><option value="pF">pF</option><option value="nF">nF</option><option value="uF">uF</option></select>
+        <button onclick="calcCap()">轉換</button>
+        <p id="cap_res" class="res">結果顯示</p>
     </div>
 
     <div class="card">
-        <h2>5. LED 限流電阻 (R = (Vcc-Vf)/I)</h2>
-        Vcc: <input type="number" id="led_vcc" placeholder="Vcc">
-        Vf: <input type="number" id="led_vf" placeholder="Vf">
-        I(mA): <input type="number" id="led_i" placeholder="I (mA)">
-        <button onclick="calcLed()">計算</button>
-        <p>電阻 = <span id="led_res">0</span> Ω</p>
+        <h2>5. 長度與歐姆定律</h2>
+        <input type="number" id="len_val" placeholder="長度">
+        <select id="len_unit"><option value="mil_mm">mil→mm</option><option value="mm_mil">mm→mil</option><option value="ps_inch">ps→inch</option></select>
+        <button onclick="calcLength()">轉換長度</button>
+        <p>結果 = <span id="len_res" class="res">0</span></p>
     </div>
 
     <script>
         function calcVoltage() {
-            let vin = document.getElementById('vin').value;
-            let r1 = document.getElementById('r1').value;
-            let r2 = document.getElementById('r2').value;
-            document.getElementById('vout_res').innerText = (vin * r2 / (Number(r1) + Number(r2))).toFixed(3);
+            let vin = document.getElementById('vin').value, ru = document.getElementById('ru').value, rd = document.getElementById('rd').value;
+            document.getElementById('vout_res').innerText = (vin * rd / (Number(ru) + Number(rd))).toFixed(3);
         }
-        function calcPower() {
-            document.getElementById('p_res').innerText = (document.getElementById('p_v').value * document.getElementById('p_i').value).toFixed(3);
+        function calcHeat() {
+            let p = document.getElementById('p_p').value, v = document.getElementById('p_v').value, i = document.getElementById('p_i').value, r = document.getElementById('p_r').value;
+            if (v && i) { p = v*i; r = v/i; }
+            else if (v && r) { p = v*v/r; i = v/r; }
+            else if (p && v) { i = p/v; r = v*v/p; }
+            document.getElementById('heat_res').innerText = `P=${p.toFixed(2)}W, I=${i.toFixed(3)}A, R=${r.toFixed(2)}Ω`;
+        }
+        function calcBattery() {
+            let cap = document.getElementById('bat_cap').value, v = document.getElementById('bat_v').value, p = document.getElementById('bat_p').value;
+            document.getElementById('bat_res').innerText = ((cap/1000 * v) / p).toFixed(2);
+        }
+        function calcCap() {
+            let v = document.getElementById('cap_val').value, u = document.getElementById('cap_unit').value;
+            let p = (u == 'pF') ? v : (u == 'nF') ? v*1000 : v*1000000;
+            document.getElementById('cap_res').innerText = `${p} pF / ${(p/1000).toFixed(3)} nF / ${(p/1000000).toFixed(6)} uF`;
         }
         function calcLength() {
-            let v = document.getElementById('len_val').value;
-            let u = document.getElementById('len_unit').value;
-            let res = 0;
-            if(u == 'mil_mm') res = v * 0.0254;
-            if(u == 'mm_mil') res = v / 0.0254;
-            if(u == 'inch_mm') res = v * 25.4;
-            if(u == 'ps_inch') res = v * 0.006; // 假設 FR4 傳輸延遲
+            let v = document.getElementById('len_val').value, u = document.getElementById('len_unit').value;
+            let res = (u == 'mil_mm') ? v*0.0254 : (u == 'mm_mil') ? v/0.0254 : v*0.006;
             document.getElementById('len_res').innerText = res.toFixed(4);
-        }
-        function calcOhm() {
-            let v = document.getElementById('ohm_v').value;
-            let i = document.getElementById('ohm_i').value;
-            let r = document.getElementById('ohm_r').value;
-            if(!v) alert("V = " + (i*r).toFixed(2));
-            else if(!i) alert("I = " + (v/r).toFixed(4));
-            else if(!r) alert("R = " + (v/i).toFixed(2));
-        }
-        function calcLed() {
-            let vcc = document.getElementById('led_vcc').value;
-            let vf = document.getElementById('led_vf').value;
-            let i = document.getElementById('led_i').value / 1000;
-            document.getElementById('led_res').innerText = ((vcc - vf) / i).toFixed(2);
         }
     </script>
 </body>
