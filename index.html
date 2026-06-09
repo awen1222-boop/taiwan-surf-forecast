@@ -2,73 +2,73 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Surfer Weather (Open-Meteo Edition)</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Surfer Weather - Multi Location</title>
     <style>
-        :root { --bg-color: #eaf3fa; --card-bg: #ffffff; --border-blue: #3a97e8; }
-        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
-        .container { width: 100%; max-width: 440px; background-color: white; border: 2px solid var(--border-blue); border-radius: 20px; padding: 15px; }
-        h1 { text-align: center; color: #1e3a8a; font-size: 22px; margin-bottom: 15px; }
-        .integrated-summary-card { width: 100%; background-color: var(--card-bg); border: 1.5px solid var(--border-blue); border-radius: 12px; display: flex; text-align: center; margin-bottom: 15px; }
-        .panel { flex: 1; padding: 15px; border-right: 1px solid var(--border-blue); }
-        .value { font-size: 28px; font-weight: bold; color: #1e3a8a; margin: 5px 0; }
-        .chart-card { background: var(--card-bg); border: 1.5px solid var(--border-blue); border-radius: 12px; padding: 12px; margin-bottom: 15px; }
-        canvas { width: 100%; height: 160px; }
-        .status { text-align: center; font-size: 12px; color: #666; }
+        :root { --bg-color: #f0f4f8; --primary: #3a97e8; }
+        body { font-family: sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; padding: 20px 10px; }
+        .container { width: 100%; max-width: 440px; background: white; border: 2px solid var(--primary); border-radius: 20px; padding: 15px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: 1px solid var(--primary); border-radius: 10px; cursor: pointer; background: white; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .panel { padding: 15px; border: 1px solid #ddd; border-radius: 10px; text-align: center; }
+        canvas { width: 100%; height: 150px; background: #f9f9f9; border-radius: 5px; }
+        .status { margin-top: 15px; text-align: center; font-size: 12px; }
         .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏄‍♂️ Surfer Weather (Open-Meteo)</h1>
+    <h1>🏄‍♂️ 浪況儀表板</h1>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="loadData('宜蘭', 24.75, 121.75, this)">宜蘭</button>
+        <button class="tab-btn" onclick="loadData('花蓮', 23.97, 121.60, this)">花蓮</button>
+        <button class="tab-btn" onclick="loadData('福隆', 25.02, 121.94, this)">福隆</button>
+    </div>
+
+    <div class="grid">
+        <div class="panel">浪高<br><span id="wave" style="font-size:24px; font-weight:bold;">--</span> m</div>
+        <div class="panel">風速<br><span id="wind" style="font-size:24px; font-weight:bold;">--</span> m/s</div>
+    </div>
     
-    <div class="integrated-summary-card">
-        <div class="panel">浪高<div class="value" id="wave-val">--</div>m</div>
-        <div class="panel">風速<div class="value" id="wind-val">--</div>m/s</div>
-    </div>
+    <div style="font-weight:bold; margin-bottom:5px;">24小時浪高趨勢</div>
+    <canvas id="chart"></canvas>
 
-    <div class="chart-card">
-        <div style="font-size: 14px; font-weight: bold;">24小時浪高趨勢</div>
-        <canvas id="waveChart"></canvas>
-    </div>
-
-    <div class="status">
-        <div class="light"></div> Open-Meteo 連線成功
-    </div>
+    <div class="status"><div class="light"></div> Open-Meteo 資料連線中...</div>
 </div>
 
 <script>
-    async function getWeatherData() {
-        // 使用 Open-Meteo Marine API (座標為烏石港附近)
-        const url = "https://marine-api.open-meteo.com/v1/marine?latitude=24.86&longitude=121.84&hourly=wave_height,wave_period&daily=sunrise,sunset&timezone=Asia%2FTokyo";
+    async function loadData(name, lat, lon, btn) {
+        // 更新按鈕樣式
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wind_speed_10m&timezone=Asia%2FTokyo`;
         
         try {
             const res = await fetch(url);
             const data = await res.json();
             
-            // 更新數值
-            const nowWave = data.hourly.wave_height[0];
-            document.getElementById('wave-val').innerText = nowWave;
-            
-            // 更新趨勢圖
-            drawChart(data.hourly.wave_height.slice(0, 12));
-            
+            // 寫入畫面
+            document.getElementById('wave').innerText = data.hourly.wave_height[0];
+            document.getElementById('wind').innerText = data.hourly.wind_speed_10m[0];
+            draw(data.hourly.wave_height.slice(0, 12));
         } catch (e) {
-            console.error("Open-Meteo 連線失敗", e);
+            alert("讀取失敗，請檢查網路");
         }
     }
 
-    function drawChart(data) {
-        const ctx = document.getElementById('waveChart').getContext('2d');
-        ctx.clearRect(0, 0, 400, 200);
-        ctx.fillStyle = '#0284c7';
-        data.forEach((val, i) => {
-            ctx.fillRect(i * 30 + 10, 150 - (val * 40), 20, val * 40);
-        });
+    function draw(data) {
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 400, 150);
+        ctx.fillStyle = "#3a97e8";
+        data.forEach((val, i) => ctx.fillRect(i * 30 + 5, 140 - (val * 30), 20, val * 30));
     }
 
-    getWeatherData();
+    // 預設載入宜蘭
+    loadData('宜蘭', 24.75, 121.75, document.querySelector('.tab-btn'));
 </script>
 </body>
 </html>
