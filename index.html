@@ -336,3 +336,147 @@
                 if (locationsArray.length === 0) throw new Error("API 成功回傳，但裡面完全沒有地點資料 (可能資料集已清空或維護中)");
 
                 apiLocations = locationsArray.slice(0, 3);
+                
+                document.getElementById('btn-0').innerText = apiLocations[0] ? apiLocations[0].locationName : "地點1";
+                document.getElementById('btn-1').innerText = apiLocations[1] ? apiLocations[1].locationName : "地點2";
+                document.getElementById('btn-2').innerText = apiLocations[2] ? apiLocations[2].locationName : "地點3";
+
+                updateStatus('success');
+                processLocationData(currentIndex);
+                
+            } catch (error) {
+                // 觸發錯誤畫面，隱藏所有圖表與資料
+                let errorMsg = error.message;
+                if(errorMsg === "Failed to fetch") {
+                    errorMsg = "CORS 跨網域阻擋 或 網路未連線 (Failed to fetch)。\n請確認您的瀏覽器沒有阻擋 API 請求。";
+                }
+                updateStatus('error', errorMsg);
+            }
+        }
+
+        function processLocationData(index) {
+            if (!apiLocations[index] || !apiLocations[index].weatherElement) return;
+            const elements = apiLocations[index].weatherElement;
+            const parsedData = {}; 
+
+            const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
+            if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
+                parsedData.waveHeight = extractValue(waveHeightElem.time[0]);
+                const newHourlyWaves = [];
+                for(let i=0; i<12; i++) {
+                    if(waveHeightElem.time[i]) {
+                        let wVal = parseFloat(extractValue(waveHeightElem.time[i]));
+                        if(!isNaN(wVal)) newHourlyWaves.push(wVal);
+                    }
+                }
+                if(newHourlyWaves.length > 0) parsedData.hourlyWaves = newHourlyWaves;
+            }
+
+            const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
+            if (wavePeriodElem) parsedData.wavePeriod = extractValue(wavePeriodElem.time[0]);
+
+            const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
+            if (windSpeedElem) parsedData.windSpeed = extractValue(windSpeedElem.time[0]);
+            
+            const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
+            if (maxWindSpeedElem) parsedData.windGust = extractValue(maxWindSpeedElem.time[0]);
+
+            renderData(parsedData);
+        }
+
+        function changeLocation(index) {
+            if (apiLocations.length === 0) return; // 如果沒資料不給切換
+            currentIndex = index;
+            document.querySelectorAll('.btn-location').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === index);
+            });
+            processLocationData(currentIndex);
+        }
+
+        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.parentElement.clientWidth || 390;
+            const height = canvas.parentElement.clientHeight || 160;
+            canvas.width = width;
+            canvas.height = height;
+
+            if(!dataArray || dataArray.length === 0) return;
+
+            const paddingLeft = 25, paddingRight = 15, paddingTop = 30, paddingBottom = 25;
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+            const hours = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
+            
+            const maxVal = Math.max(...dataArray) + 0.3;
+            const minVal = Math.min(...dataArray) - 0.3;
+            
+            const points = [];
+            for (let i = 0; i < dataArray.length; i++) {
+                const x = paddingLeft + (i / (dataArray.length - 1)) * chartWidth;
+                const y = paddingTop + chartHeight - ((dataArray[i] - minVal) / (maxVal - minVal)) * chartHeight;
+                points.push({ x, y, value: dataArray[i] });
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.lineTo(paddingLeft, height - paddingBottom);
+            ctx.closePath();
+            
+            let gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+            gradient.addColorStop(0, gradientStart);
+            gradient.addColorStop(1, gradientEnd);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#444444';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+
+            points.forEach((p, idx) => {
+                if (idx % 2 === 0 || idx === 5) {
+                    ctx.fillStyle = '#333333';
+                    ctx.fillText(`${p.value.toFixed(1)}`, p.x, p.y - 12);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, idx === 5 ? 5 : 3.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = idx === 5 ? '#f97316' : '#475569'; 
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#666666';
+                ctx.fillText(hours[idx], p.x, height - 8);
+            });
+
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, height - paddingBottom);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchWeatherData();
+        });
+    </script>
+</body>
+</html>
