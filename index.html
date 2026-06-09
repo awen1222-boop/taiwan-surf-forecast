@@ -1,112 +1,101 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣衝浪浪況儀表板</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>硬體工程師速算工具</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: #f0f4f8; padding: 15px; }
-        .container { max-width: 500px; margin: auto; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 12px; border: 2px solid #3a97e8; border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; }
-        .tab.active { background: #3a97e8; color: white; }
-        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .card { background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .big { font-size: 28px; font-weight: bold; color: #1e3a8a; }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background: white; padding: 15px; border-radius: 12px; text-align: center; }
-        .status { text-align: center; margin-top: 20px; padding: 10px; font-size: 14px; }
-        .light { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #ef4444; }
-        .light.green { background: #22c55e; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 5px; }
+        input { width: 100px; padding: 5px; margin: 5px; }
+        button { padding: 5px 15px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="tabs" id="tabContainer">
-        <div class="tab active" onclick="changeSpot('fulong', this)">福隆</div>
-        <div class="tab" onclick="changeSpot('wushi', this)">烏石港</div>
-        <div class="tab" onclick="changeSpot('jici', this)">磯崎</div>
+    <h1>硬體工程師常用工具</h1>
+
+    <div class="card">
+        <h2>1. 分壓計算 (Vout)</h2>
+        Vin: <input type="number" id="vin" placeholder="Vin"> 
+        R1: <input type="number" id="r1" placeholder="R1 (Ω)"> 
+        R2: <input type="number" id="r2" placeholder="R2 (Ω)">
+        <button onclick="calcVoltage()">計算</button>
+        <p>Vout = <span id="vout_res">0</span> V</p>
     </div>
 
-    <div class="cards">
-        <div class="card">浪高<div class="big" id="waveH">--</div>m</div>
-        <div class="card">風速<div class="big" id="windS">--</div>m/s</div>
+    <div class="card">
+        <h2>2. 功率計算 (P = V * I)</h2>
+        V: <input type="number" id="p_v" placeholder="V"> 
+        I: <input type="number" id="p_i" placeholder="I (A)">
+        <button onclick="calcPower()">計算</button>
+        <p>P = <span id="p_res">0</span> W</p>
     </div>
 
-    <div class="grid">
-        <div class="item">日出<span id="sunrise">--</span></div>
-        <div class="item">日落<span id="sunset">--</span></div>
-        <div class="item">風向<span id="windD">--</span>°</div>
-        <div class="item">浪向<span id="waveD">--</span>°</div>
+    <div class="card">
+        <h2>3. 長度/時間換算</h2>
+        <input type="number" id="len_val" placeholder="數值">
+        <select id="len_unit">
+            <option value="mil_mm">mil 轉 mm</option>
+            <option value="mm_mil">mm 轉 mil</option>
+            <option value="inch_mm">inch 轉 mm</option>
+            <option value="ps_inch">ps 轉 inch (FR4, ~6 inch/ns)</option>
+        </select>
+        <button onclick="calcLength()">轉換</button>
+        <p>結果 = <span id="len_res">0</span></p>
     </div>
 
-    <div class="chart-card" style="background:white; padding:10px; border-radius:12px; margin-top:15px;">
-        <canvas id="waveChart"></canvas>
+    <div class="card">
+        <h2>4. 歐姆定律 (V=IR)</h2>
+        V: <input type="number" id="ohm_v" placeholder="V">
+        I: <input type="number" id="ohm_i" placeholder="I (A)">
+        R: <input type="number" id="ohm_r" placeholder="R (Ω)">
+        <button onclick="calcOhm()">計算 (請留空一項)</button>
     </div>
 
-    <div class="status">
-        <div id="statusLight" class="light"></div> <span id="statusTxt">連線中...</span>
+    <div class="card">
+        <h2>5. LED 限流電阻 (R = (Vcc-Vf)/I)</h2>
+        Vcc: <input type="number" id="led_vcc" placeholder="Vcc">
+        Vf: <input type="number" id="led_vf" placeholder="Vf">
+        I(mA): <input type="number" id="led_i" placeholder="I (mA)">
+        <button onclick="calcLed()">計算</button>
+        <p>電阻 = <span id="led_res">0</span> Ω</p>
     </div>
-</div>
 
-<script>
-const spots = {
-    fulong: { lat: 25.021, lon: 121.944 },
-    wushi: { lat: 24.867, lon: 121.842 },
-    jici: { lat: 23.742, lon: 121.557 }
-};
-
-let currentSpot = 'fulong';
-let chart;
-
-async function loadData() {
-    const spot = spots[currentSpot];
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&hourly=uv_index&daily=sunrise,sunset&timezone=Asia/Taipei`;
-    const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}&hourly=wave_height,wave_period,wave_direction&timezone=Asia/Taipei`;
-
-    try {
-        const [weather, marine] = await Promise.all([
-            fetch(weatherUrl).then(r => r.json()),
-            fetch(marineUrl).then(r => r.json())
-        ]);
-
-        document.getElementById('waveH').innerText = marine.hourly.wave_height[0].toFixed(1);
-        document.getElementById('windS').innerText = weather.current.wind_speed_10m;
-        document.getElementById('sunrise').innerText = weather.daily.sunrise[0].substring(11,16);
-        document.getElementById('sunset').innerText = weather.daily.sunset[0].substring(11,16);
-        document.getElementById('windD').innerText = weather.current.wind_direction_10m;
-        document.getElementById('waveD').innerText = marine.hourly.wave_direction[0];
-
-        document.getElementById('statusLight').classList.add('green');
-        document.getElementById('statusTxt').innerText = "Open-Meteo 連線成功";
-
-        updateChart(marine.hourly.wave_height.slice(0, 24));
-    } catch(e) {
-        document.getElementById('statusTxt').innerText = "連線失敗";
-        console.error(e);
-    }
-}
-
-function changeLocation(spot, el) {
-    currentSpot = spot;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    loadData();
-}
-
-function updateChart(data) {
-    const ctx = document.getElementById('waveChart').getContext('2d');
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: Array.from({length:24}, (_,i)=>i+'時'), datasets: [{ label: '浪高', data: data, borderColor: '#3a97e8', fill: true }] },
-        options: { responsive: true }
-    });
-}
-
-loadData();
-</script>
+    <script>
+        function calcVoltage() {
+            let vin = document.getElementById('vin').value;
+            let r1 = document.getElementById('r1').value;
+            let r2 = document.getElementById('r2').value;
+            document.getElementById('vout_res').innerText = (vin * r2 / (Number(r1) + Number(r2))).toFixed(3);
+        }
+        function calcPower() {
+            document.getElementById('p_res').innerText = (document.getElementById('p_v').value * document.getElementById('p_i').value).toFixed(3);
+        }
+        function calcLength() {
+            let v = document.getElementById('len_val').value;
+            let u = document.getElementById('len_unit').value;
+            let res = 0;
+            if(u == 'mil_mm') res = v * 0.0254;
+            if(u == 'mm_mil') res = v / 0.0254;
+            if(u == 'inch_mm') res = v * 25.4;
+            if(u == 'ps_inch') res = v * 0.006; // 假設 FR4 傳輸延遲
+            document.getElementById('len_res').innerText = res.toFixed(4);
+        }
+        function calcOhm() {
+            let v = document.getElementById('ohm_v').value;
+            let i = document.getElementById('ohm_i').value;
+            let r = document.getElementById('ohm_r').value;
+            if(!v) alert("V = " + (i*r).toFixed(2));
+            else if(!i) alert("I = " + (v/r).toFixed(4));
+            else if(!r) alert("R = " + (v/i).toFixed(2));
+        }
+        function calcLed() {
+            let vcc = document.getElementById('led_vcc').value;
+            let vf = document.getElementById('led_vf').value;
+            let i = document.getElementById('led_i').value / 1000;
+            document.getElementById('led_res').innerText = ((vcc - vf) / i).toFixed(2);
+        }
+    </script>
 </body>
 </html>
