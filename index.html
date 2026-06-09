@@ -453,4 +453,152 @@
                 // ★ 自動修復機制 (Auto-Healing) ★
                 // 如果預設的地名抓不到，直接強迫綁定 API 傳回來的前三個地點，確保絕對能顯示資料！
                 if (!matchedLocation && locationsArray.length >= 3) {
-                    surfData.w
+                    surfData.wushi.name = locationsArray[0].locationName;
+                    surfData.jici.name = locationsArray[1].locationName;
+                    surfData.fulong.name = locationsArray[2].locationName;
+
+                    // 同步更新按鈕上的文字
+                    document.getElementById('btn-wushi').innerText = surfData.wushi.name;
+                    document.getElementById('btn-jici').innerText = surfData.jici.name;
+                    document.getElementById('btn-fulong').innerText = surfData.fulong.name;
+
+                    targetAreaName = surfData[currentLoc].name;
+                    matchedLocation = locationsArray.find(loc => loc.locationName === targetAreaName);
+                }
+
+                if (!matchedLocation) throw new Error(`依然找不到匹配的海域名稱`);
+
+                if (matchedLocation.weatherElement) {
+                    const elements = matchedLocation.weatherElement;
+                    
+                    const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
+                    if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
+                        surfData[currentLoc].waveHeight = extractValue(waveHeightElem.time[0]);
+                        const newHourlyWaves = [];
+                        for(let i=0; i<12; i++) {
+                            if(waveHeightElem.time[i]) {
+                                let wVal = parseFloat(extractValue(waveHeightElem.time[i]));
+                                if(!isNaN(wVal)) newHourlyWaves.push(wVal);
+                            }
+                        }
+                        if(newHourlyWaves.length > 0) surfData[currentLoc].hourlyWaves = newHourlyWaves;
+                    }
+
+                    const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
+                    if (wavePeriodElem && wavePeriodElem.time[0]) surfData[currentLoc].wavePeriod = extractValue(wavePeriodElem.time[0]);
+
+                    const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
+                    if (windSpeedElem && windSpeedElem.time[0]) surfData[currentLoc].windSpeed = extractValue(windSpeedElem.time[0]);
+                    
+                    const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
+                    if (maxWindSpeedElem && maxWindSpeedElem.time[0]) surfData[currentLoc].windGust = extractValue(maxWindSpeedElem.time[0]);
+
+                    updateStatusLight(true);
+                    renderDashboard();
+                } else {
+                    throw new Error("找到地點，但缺乏詳細數值");
+                }
+                
+            } catch (error) {
+                updateStatusLight(false, error.message);
+                renderDashboard();
+            }
+        }
+
+        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.parentElement.clientWidth || 390;
+            const height = canvas.parentElement.clientHeight || 160;
+            canvas.width = width;
+            canvas.height = height;
+
+            const paddingLeft = 25, paddingRight = 15, paddingTop = 30, paddingBottom = 25;
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+            const hours = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
+            
+            const maxVal = Math.max(...dataArray) + 0.3;
+            const minVal = Math.min(...dataArray) - 0.3;
+            
+            const points = [];
+            for (let i = 0; i < dataArray.length; i++) {
+                const x = paddingLeft + (i / (dataArray.length - 1)) * chartWidth;
+                const y = paddingTop + chartHeight - ((dataArray[i] - minVal) / (maxVal - minVal)) * chartHeight;
+                points.push({ x, y, value: dataArray[i] });
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.lineTo(paddingLeft, height - paddingBottom);
+            ctx.closePath();
+            
+            let gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+            gradient.addColorStop(0, gradientStart);
+            gradient.addColorStop(1, gradientEnd);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#444444';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+
+            points.forEach((p, idx) => {
+                if (idx % 2 === 0 || idx === 5) {
+                    ctx.fillStyle = '#333333';
+                    ctx.fillText(`${p.value.toFixed(1)}`, p.x, p.y - 12);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, idx === 5 ? 5 : 3.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = idx === 5 ? '#f97316' : '#475569'; 
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#666666';
+                ctx.fillText(hours[idx], p.x, height - 8);
+            });
+
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, height - paddingBottom);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function changeLocation(locKey) {
+            currentLoc = locKey;
+            const buttons = document.querySelectorAll('.btn-location');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const targetBtn = document.getElementById(`btn-${locKey}`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+            fetchWeatherData();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchWeatherData();
+            setInterval(fetchWeatherData, 600000);
+        });
+    </script>
+</body>
+</html>
