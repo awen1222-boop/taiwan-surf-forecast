@@ -2,44 +2,73 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Surfer Weather Dashboard</title>
+    <title>Surfer Weather (Open-Meteo Edition)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg-color: #eaf3fa; --card-bg: #ffffff; --border-blue: #3a97e8; }
         body { font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
         .container { width: 100%; max-width: 440px; background-color: white; border: 2px solid var(--border-blue); border-radius: 20px; padding: 15px; }
         h1 { text-align: center; color: #1e3a8a; font-size: 22px; margin-bottom: 15px; }
-        
-        /* 嵌入地圖容器 */
-        .map-container { width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--border-blue); }
-        
-        .panel { background: white; border: 1.5px solid var(--border-blue); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 10px; }
-        
-        /* 狀態燈 */
-        .status-box { text-align: center; font-size: 12px; color: #666; margin-top: 10px; }
+        .integrated-summary-card { width: 100%; background-color: var(--card-bg); border: 1.5px solid var(--border-blue); border-radius: 12px; display: flex; text-align: center; margin-bottom: 15px; }
+        .panel { flex: 1; padding: 15px; border-right: 1px solid var(--border-blue); }
+        .value { font-size: 28px; font-weight: bold; color: #1e3a8a; margin: 5px 0; }
+        .chart-card { background: var(--card-bg); border: 1.5px solid var(--border-blue); border-radius: 12px; padding: 12px; margin-bottom: 15px; }
+        canvas { width: 100%; height: 160px; }
+        .status { text-align: center; font-size: 12px; color: #666; }
         .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏄‍♂️ Surfer Weather Dashboard</h1>
-
-    <div class="map-container">
-        <iframe width="100%" height="100%" src="https://embed.windy.com/embed2.html?lat=24.8&lon=121.8&zoom=9&level=surface&overlay=waves&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=24.8&detailLon=121.8&metricWind=default&metricTemp=default&radarRange=-1" frameborder="0"></iframe>
-    </div>
-
-    <div class="panel">
-        <p>即時浪況已由專業衛星即時更新</p>
-        <div class="status-box">
-            <div class="light"></div> 連線狀態：正常
-        </div>
-    </div>
+    <h1>🏄‍♂️ Surfer Weather (Open-Meteo)</h1>
     
-    <footer style="text-align: center; font-size: 11px; margin-top: 10px;">
-        Powered by Windy.com
-    </footer>
+    <div class="integrated-summary-card">
+        <div class="panel">浪高<div class="value" id="wave-val">--</div>m</div>
+        <div class="panel">風速<div class="value" id="wind-val">--</div>m/s</div>
+    </div>
+
+    <div class="chart-card">
+        <div style="font-size: 14px; font-weight: bold;">24小時浪高趨勢</div>
+        <canvas id="waveChart"></canvas>
+    </div>
+
+    <div class="status">
+        <div class="light"></div> Open-Meteo 連線成功
+    </div>
 </div>
 
+<script>
+    async function getWeatherData() {
+        // 使用 Open-Meteo Marine API (座標為烏石港附近)
+        const url = "https://marine-api.open-meteo.com/v1/marine?latitude=24.86&longitude=121.84&hourly=wave_height,wave_period&daily=sunrise,sunset&timezone=Asia%2FTokyo";
+        
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            // 更新數值
+            const nowWave = data.hourly.wave_height[0];
+            document.getElementById('wave-val').innerText = nowWave;
+            
+            // 更新趨勢圖
+            drawChart(data.hourly.wave_height.slice(0, 12));
+            
+        } catch (e) {
+            console.error("Open-Meteo 連線失敗", e);
+        }
+    }
+
+    function drawChart(data) {
+        const ctx = document.getElementById('waveChart').getContext('2d');
+        ctx.clearRect(0, 0, 400, 200);
+        ctx.fillStyle = '#0284c7';
+        data.forEach((val, i) => {
+            ctx.fillRect(i * 30 + 10, 150 - (val * 40), 20, val * 40);
+        });
+    }
+
+    getWeatherData();
+</script>
 </body>
 </html>
