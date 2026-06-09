@@ -1,84 +1,256 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>Surfer Weather Dashboard</title>
-    <style>
-        :root { --primary: #3a97e8; --bg: #f0f4f8; }
-        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px 10px; }
-        .container { width: 100%; max-width: 440px; background: white; border: 2px solid var(--primary); border-radius: 20px; padding: 15px; }
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px; border: 1px solid var(--primary); border-radius: 10px; cursor: pointer; background: white; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .panel { padding: 15px; border: 1px solid #ddd; border-radius: 10px; text-align: center; }
-        canvas { width: 100%; height: 120px; }
-        .status { margin-top: 15px; text-align: center; font-size: 12px; }
-        .light { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>台灣衝浪浪況</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    background:#f4f4f4;
+    font-family:Arial;
+    margin:20px;
+}
+
+.container{
+    max-width:420px;
+    margin:auto;
+}
+
+.card-row{
+    display:flex;
+    gap:10px;
+}
+
+.card{
+    flex:1;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+.card-top{
+    padding:20px;
+    text-align:center;
+}
+
+.card-value{
+    font-size:42px;
+    font-weight:bold;
+}
+
+.card-sub{
+    font-size:18px;
+    color:#666;
+}
+
+.wave{
+    background:#1976d2;
+    color:white;
+}
+
+.wind{
+    background:#c9c53d;
+    color:white;
+}
+
+.info{
+    margin-top:10px;
+    background:white;
+    border-radius:10px;
+    padding:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    text-align:center;
+}
+
+.info-item{
+    font-size:18px;
+}
+
+canvas{
+    margin-top:10px;
+    background:white;
+    border-radius:10px;
+    padding:10px;
+}
+
+</style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏄‍♂️ 浪況儀表板</h1>
-    <div class="tabs">
-        <button class="tab-btn active" onclick="fetchData('宜蘭', 24.86, 121.84, this)">宜蘭</button>
-        <button class="tab-btn" onclick="fetchData('花蓮', 23.97, 121.60, this)">花蓮</button>
-        <button class="tab-btn" onclick="fetchData('福隆', 25.02, 121.94, this)">福隆</button>
+
+    <div class="card-row">
+
+        <div class="card">
+            <div class="card-top wave">
+                <div class="card-value" id="waveHeight">--</div>
+                <div>m</div>
+            </div>
+
+            <div class="card-sub" id="wavePeriod">
+                -- s
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-top wind">
+                <div class="card-value" id="windSpeed">--</div>
+                <div>m/s</div>
+            </div>
+
+            <div class="card-sub" id="windDir">
+                --
+            </div>
+        </div>
+
     </div>
 
-    <div class="grid">
-        <div class="panel">浪高<br><span id="wave" style="font-size:24px; font-weight:bold;">--</span> m</div>
-        <div class="panel">風速<br><span id="wind" style="font-size:24px; font-weight:bold;">--</span> m/s</div>
-    </div>
-    
-    <div style="font-weight:bold; margin-bottom:5px;">24小時浪高趨勢</div>
-    <canvas id="chart"></canvas>
+    <div class="info">
 
-    <div class="status"><div class="light"></div> Open-Meteo 即時連線中</div>
+        <div class="info-grid">
+
+            <div class="info-item">
+                ☀️<br>
+                <span id="sunrise">--</span>
+            </div>
+
+            <div class="info-item">
+                🌅<br>
+                <span id="sunset">--</span>
+            </div>
+
+            <div class="info-item">
+                🌡️<br>
+                <span id="temp">--</span>°
+            </div>
+
+            <div class="info-item">
+                UV<br>
+                <span id="uv">--</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <canvas id="waveChart"></canvas>
+
 </div>
 
 <script>
-    async function fetchData(name, lat, lon, btn) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
 
-        const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wind_speed_10m&timezone=Asia%2FTokyo`;
-        
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            
-            // 寫入數據
-            const wave = data.hourly.wave_height[0];
-            const wind = data.hourly.wind_speed_10m[0];
-            
-            document.getElementById('wave').innerText = wave !== null ? wave : "--";
-            document.getElementById('wind').innerText = wind !== null ? wind : "--";
-            
-            draw(data.hourly.wave_height.slice(0, 12));
-        } catch (e) {
-            console.error(e);
-            document.getElementById('wave').innerText = "ERR";
-        }
-    }
+const lat = 24.867;
+const lon = 121.842;
 
-    function draw(data) {
-        const canvas = document.getElementById('chart');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#3a97e8";
-        
-        const barWidth = 20;
-        data.forEach((val, i) => {
-            if(val === null) return;
-            const h = (val || 0) * 30;
-            ctx.fillRect(i * 32 + 10, 120 - h, barWidth, h);
-        });
-    }
+// 烏石港
 
-    // 啟動
-    fetchData('宜蘭', 24.86, 121.84, document.querySelector('.tab-btn'));
+async function loadData(){
+
+const url =
+`https://api.open-meteo.com/v1/forecast
+?latitude=${lat}
+&longitude=${lon}
+&hourly=temperature_2m,uv_index
+&daily=sunrise,sunset
+&current=temperature_2m
+&timezone=Asia/Taipei`;
+
+const marine =
+`https://marine-api.open-meteo.com/v1/marine
+?latitude=${lat}
+&longitude=${lon}
+&hourly=wave_height,wave_period,wave_direction`;
+
+const wind =
+`https://api.open-meteo.com/v1/forecast
+?latitude=${lat}
+&longitude=${lon}
+&current=wind_speed_10m,wind_direction_10m`;
+
+const [
+    weather,
+    sea,
+    windData
+] = await Promise.all([
+    fetch(url).then(r=>r.json()),
+    fetch(marine).then(r=>r.json()),
+    fetch(wind).then(r=>r.json())
+]);
+
+document.getElementById("waveHeight").innerText =
+sea.hourly.wave_height[0].toFixed(1);
+
+document.getElementById("wavePeriod").innerText =
+sea.hourly.wave_period[0].toFixed(1)+" s";
+
+document.getElementById("windSpeed").innerText =
+Math.round(windData.current.wind_speed_10m);
+
+document.getElementById("windDir").innerText =
+windData.current.wind_direction_10m+"°";
+
+document.getElementById("sunrise").innerText =
+weather.daily.sunrise[0].substring(11,16);
+
+document.getElementById("sunset").innerText =
+weather.daily.sunset[0].substring(11,16);
+
+document.getElementById("temp").innerText =
+weather.current.temperature_2m;
+
+document.getElementById("uv").innerText =
+Math.max(...weather.hourly.uv_index);
+
+createChart(sea);
+
+}
+
+function createChart(sea){
+
+const labels =
+sea.hourly.time.slice(0,24).map(t=>t.substring(11,16));
+
+const values =
+sea.hourly.wave_height.slice(0,24);
+
+new Chart(
+document.getElementById('waveChart'),
+{
+type:'line',
+data:{
+labels:labels,
+datasets:[{
+label:'浪高(m)',
+data:values
+}]
+},
+options:{
+responsive:true,
+plugins:{
+legend:{
+display:false
+}
+}
+}
+}
+);
+
+}
+
+loadData();
+
 </script>
+
 </body>
 </html>
