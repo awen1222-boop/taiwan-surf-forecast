@@ -41,10 +41,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
+        /* 標題與衝浪 Icon (加入原生 Emoji 確保絕對顯示) */
         h1 {
             text-align: center;
             color: #1e3a8a;
-            font-size: 22px;
+            font-size: 23px;
             margin-top: 5px;
             margin-bottom: 15px;
             font-weight: bold;
@@ -66,16 +67,14 @@
             background-color: #ffffff;
             border: 1.5px solid var(--border-blue);
             color: #1e3a8a;
-            padding: 8px 3px;
-            font-size: 14px;
+            padding: 8px 5px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .btn-location.active {
@@ -84,6 +83,7 @@
             border-color: #2563eb;
         }
 
+        /* 一體化摘要卡片佈局 */
         .integrated-summary-card {
             width: 100%;
             background-color: var(--card-bg);
@@ -180,6 +180,7 @@
             border-top: 1px solid #e2e8f0;
         }
 
+        /* 曲線圖卡片佈局 */
         .chart-card {
             background: var(--card-bg);
             border: 1.5px solid var(--border-blue);
@@ -209,6 +210,7 @@
             height: 100%;
         }
 
+        /* 詳細數據卡片佈局 */
         .env-card {
             background: var(--card-bg);
             border: 1.5px solid var(--border-blue);
@@ -233,6 +235,7 @@
         .env-value { font-size: 18px; font-weight: bold; color: #333333; }
         .env-icon { font-size: 32px; }
 
+        /* 底部燈號與資訊 */
         footer {
             text-align: center;
             font-size: 12px;
@@ -275,9 +278,9 @@
         <h1>🏄‍♂️ <i class="fa-solid fa-person-surfing"></i> Surfer Weather Dashboard</h1>
         
         <div class="location-selector">
-            <button id="btn-wushi" class="btn-location active" onclick="changeLocation('wushi')">臺灣東北部海面</button>
-            <button id="btn-jici" class="btn-location" onclick="changeLocation('jici')">臺灣東南部海面</button>
-            <button id="btn-fulong" class="btn-location" onclick="changeLocation('fulong')">臺灣北部海面</button>
+            <button id="btn-wushi" class="btn-location active" onclick="changeLocation('wushi')">宜蘭 烏石港</button>
+            <button id="btn-jici" class="btn-location" onclick="changeLocation('jici')">花蓮 磯崎</button>
+            <button id="btn-fulong" class="btn-location" onclick="changeLocation('fulong')">新北 福隆</button>
         </div>
 
         <div class="integrated-summary-card">
@@ -351,6 +354,7 @@
                 <span id="status-text">資料來源：載入中...</span>
             </div>
             <div id="error-log" class="error-message"></div>
+            
             <div style="margin-top: 8px;">
                 氣象署資料 API 連接 | <a href="https://ithelp.ithome.com.tw/articles/10243411" target="_blank">API KEY info</a>
             </div>
@@ -360,28 +364,27 @@
     <script>
         const API_KEY = 'CWA-75771967-831F-42A8-9F12-F0184B3534DE';
         
-        // 預設對應氣象署「近海海象預報」的大海域名稱
         const surfData = {
             wushi: {
-                name: "臺灣東北部海面", 
+                name: "宜蘭沿海", 
                 waveHeight: "1.1", wavePeriod: "6.4 s", waveDirDeg: 45, 
-                windSpeed: "1", windGust: "2", windDirDeg: 180, 
+                windSpeed: "1", windGust: "2 m/s", windDirDeg: 180, 
                 sunrise: "05:02", sunset: "18:40", temp: "26°C", seaTemp: "29°C", uv: "8",
                 hourlyWaves: [1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8],
                 hourlyTides: [0.5, 0.6, 0.7, 0.8, 1.0, 1.3, 1.4, 1.1, 0.8, 0.6, 0.5, 0.4] 
             },
             jici: {
-                name: "臺灣東南部海面",
+                name: "花蓮沿海",
                 waveHeight: "1.4", wavePeriod: "7.2 s", waveDirDeg: 90,
-                windSpeed: "5", windGust: "7", windDirDeg: 130,
+                windSpeed: "5", windGust: "7 m/s", windDirDeg: 130,
                 sunrise: "05:04", sunset: "18:38", temp: "27°C", seaTemp: "28°C", uv: "9",
                 hourlyWaves: [1.2, 1.3, 1.4, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 1.2, 1.3, 1.1],
                 hourlyTides: [0.2, 0.6, 1.1, 1.4, 1.0, 0.5, 0.1, -0.2, 0.3, 0.8, 1.2, 0.7]
             },
             fulong: {
-                name: "臺灣北部海面", 
+                name: "新竹基隆沿海", 
                 waveHeight: "0.9", wavePeriod: "6.7 s", waveDirDeg: 20,
-                windSpeed: "3", windGust: "5", windDirDeg: 340,
+                windSpeed: "3", windGust: "5 m/s", windDirDeg: 340,
                 sunrise: "05:01", sunset: "18:42", temp: "25°C", seaTemp: "27°C", uv: "7",
                 hourlyWaves: [0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6],
                 hourlyTides: [1.0, 0.5, 0.1, -0.2, 0.2, 0.7, 1.1, 0.8, 0.4, 0.0, -0.1, 0.4]
@@ -406,7 +409,8 @@
                 light.classList.remove('green');
                 text.innerText = '狀態：離線預估 (氣象局連線失敗)';
                 text.style.color = '#ef4444';
-                errorLog.innerText = `[系統診斷] ${errorMessage}`;
+                // 顯示具體錯誤原因方便除錯
+                errorLog.innerText = `錯誤原因: ${errorMessage}`;
             }
         }
 
@@ -415,97 +419,104 @@
             if (!data) return;
             
             document.getElementById('wave-height').innerText = data.waveHeight;
-            document.getElementById('wave-period').innerText = `@ ${data.wavePeriod.replace('s', '')} s`;
+            document.getElementById('wave-period').innerText = `@ ${data.wavePeriod}`;
             document.getElementById('wind-speed').innerText = data.windSpeed;
-            document.getElementById('wind-gust').innerText = `${data.windGust} m/s`;
+            document.getElementById('wind-gust').innerText = data.windGust;
             
+            document.getElementById('sunrise-time').innerText = data.sunrise;
+            document.getElementById('sunset-time').innerText = data.sunset;
+            document.getElementById('air-temp').innerText = data.temp;
+            document.getElementById('sea-temp').innerText = data.seaTemp;
+            document.getElementById('uv-index').innerText = data.uv;
+
+            document.getElementById('wave-dir').style.transform = `rotate(${data.waveDirDeg}deg)`;
+            document.getElementById('wind-dir').style.transform = `rotate(${data.windDirDeg}deg)`;
+
             setTimeout(() => {
-                drawDynamicChart('waveChart', data.hourlyWaves, '#0284c7', 'rgba(56, 189, 248, 0.7)', 'rgba(2, 132, 199, 0.05)');
-                drawDynamicChart('tideChart', data.hourlyTides, '#0d9488', 'rgba(45, 212, 191, 0.7)', 'rgba(13, 148, 136, 0.05)');
+                drawDynamicChart('waveChart', data.hourlyWaves, '#0284c7', 'rgba(56, 189, 248, 0.7)', 'rgba(2, 132, 199, 0.05)', true);
+                
+                if (currentLoc === 'wushi') {
+                    drawWushiTideChart();
+                } else {
+                    drawDynamicChart('tideChart', data.hourlyTides, '#0d9488', 'rgba(45, 212, 191, 0.7)', 'rgba(13, 148, 136, 0.05)', false);
+                }
             }, 50);
         }
 
-        // 強力數值提煉工具 (無視氣象局改版)
-        const extractValue = (timeObj) => {
-            if (!timeObj || !timeObj.elementValue || !timeObj.elementValue[0]) return "0";
-            const valObj = timeObj.elementValue[0];
-            return valObj.value || valObj.waveHeight || valObj.windSpeed || valObj.wavePeriod || Object.values(valObj)[0] || "0";
-        };
-
         async function fetchWeatherData() {
+            // 先渲染基本資料防空白
             renderDashboard();
 
             try {
-                // F-A0012-001 近海海象預報
+                // 嘗試請求氣象署近海海象 API
                 const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-A0012-001?Authorization=${API_KEY}&format=JSON`;
                 const response = await fetch(url);
                 
-                if (!response.ok) throw new Error(`HTTP 狀態碼: ${response.status}`);
-                const json = await response.json();
-                if (json.success === "false") throw new Error(json.message || "API 內部回傳失敗");
+                // 捕捉 HTTP 錯誤狀態 (例如 401 授權失敗)
+                if (!response.ok) {
+                    if(response.status === 401) throw new Error("API Key 無效或未授權");
+                    throw new Error(`HTTP 錯誤狀態碼: ${response.status}`);
+                }
                 
+                const json = await response.json();
+                
+                // 捕捉 API 內部回傳的錯誤
+                if (json.success === "false") {
+                    throw new Error(json.message || "API 內部回傳失敗");
+                }
+                
+                // 彈性解析資料結構，避免因為 API 結構微調導致當機
                 const locationsArray = json.records.location || (json.records.dataset && json.records.dataset.location) || [];
-                if (locationsArray.length === 0) throw new Error("API 內沒有 location 資料");
-
-                let targetAreaName = surfData[currentLoc].name;
-                let matchedLocation = locationsArray.find(loc => loc.locationName && loc.locationName.includes(targetAreaName));
-
-                // ★ 自動修復機制 (Auto-Healing) ★
-                // 如果預設的地名抓不到，直接強迫綁定 API 傳回來的前三個地點，確保絕對能顯示資料！
-                if (!matchedLocation && locationsArray.length >= 3) {
-                    surfData.wushi.name = locationsArray[0].locationName;
-                    surfData.jici.name = locationsArray[1].locationName;
-                    surfData.fulong.name = locationsArray[2].locationName;
-
-                    // 同步更新按鈕上的文字
-                    document.getElementById('btn-wushi').innerText = surfData.wushi.name;
-                    document.getElementById('btn-jici').innerText = surfData.jici.name;
-                    document.getElementById('btn-fulong').innerText = surfData.fulong.name;
-
-                    targetAreaName = surfData[currentLoc].name;
-                    matchedLocation = locationsArray.find(loc => loc.locationName === targetAreaName);
+                
+                if (locationsArray.length === 0) {
+                    throw new Error("無法從 API 獲取 location 陣列資料");
                 }
 
-                if (!matchedLocation) throw new Error(`依然找不到匹配的海域名稱`);
+                const targetAreaName = surfData[currentLoc].name;
+                const matchedLocation = locationsArray.find(loc => loc.locationName && loc.locationName.includes(targetAreaName));
+                
+                if (!matchedLocation) {
+                    throw new Error(`API 回傳資料中沒有找到「${targetAreaName}」`);
+                }
 
                 if (matchedLocation.weatherElement) {
                     const elements = matchedLocation.weatherElement;
                     
                     const waveHeightElem = elements.find(el => el.elementName === 'WaveHeight');
                     if (waveHeightElem && waveHeightElem.time && waveHeightElem.time[0]) {
-                        surfData[currentLoc].waveHeight = extractValue(waveHeightElem.time[0]);
+                        surfData[currentLoc].waveHeight = waveHeightElem.time[0].elementValue[0].waveHeight;
                         const newHourlyWaves = [];
                         for(let i=0; i<12; i++) {
-                            if(waveHeightElem.time[i]) {
-                                let wVal = parseFloat(extractValue(waveHeightElem.time[i]));
-                                if(!isNaN(wVal)) newHourlyWaves.push(wVal);
-                            }
+                            if(waveHeightElem.time[i]) newHourlyWaves.push(parseFloat(waveHeightElem.time[i].elementValue[0].waveHeight));
                         }
                         if(newHourlyWaves.length > 0) surfData[currentLoc].hourlyWaves = newHourlyWaves;
                     }
 
                     const wavePeriodElem = elements.find(el => el.elementName === 'WavePeriod');
-                    if (wavePeriodElem && wavePeriodElem.time[0]) surfData[currentLoc].wavePeriod = extractValue(wavePeriodElem.time[0]);
+                    if (wavePeriodElem && wavePeriodElem.time[0]) surfData[currentLoc].wavePeriod = wavePeriodElem.time[0].elementValue[0].wavePeriod + " s";
 
                     const windSpeedElem = elements.find(el => el.elementName === 'WindSpeed');
-                    if (windSpeedElem && windSpeedElem.time[0]) surfData[currentLoc].windSpeed = extractValue(windSpeedElem.time[0]);
+                    if (windSpeedElem && windSpeedElem.time[0]) surfData[currentLoc].windSpeed = windSpeedElem.time[0].elementValue[0].windSpeed;
                     
                     const maxWindSpeedElem = elements.find(el => el.elementName === 'MaxWindSpeed');
-                    if (maxWindSpeedElem && maxWindSpeedElem.time[0]) surfData[currentLoc].windGust = extractValue(maxWindSpeedElem.time[0]);
+                    if (maxWindSpeedElem && maxWindSpeedElem.time[0]) surfData[currentLoc].windGust = maxWindSpeedElem.time[0].elementValue[0].maxWindSpeed + " m/s";
 
+                    // 走到這裡代表一切順利解析，亮起綠燈！
                     updateStatusLight(true);
                     renderDashboard();
                 } else {
-                    throw new Error("找到地點，但缺乏詳細數值");
+                    throw new Error("地點存在，但缺乏 weatherElement 欄位");
                 }
                 
             } catch (error) {
+                // 如果失敗，在畫面上印出真實錯誤訊息，方便我們抓蟲
                 updateStatusLight(false, error.message);
                 renderDashboard();
             }
         }
 
-        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd) {
+        // 共用畫圖功能 (無更動)
+        function drawDynamicChart(canvasId, dataArray, lineColor, gradientStart, gradientEnd, isWaveChart) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -574,6 +585,102 @@
                 }
                 ctx.fillStyle = '#666666';
                 ctx.fillText(hours[idx], p.x, height - 8);
+            });
+
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, height - paddingBottom);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawWushiTideChart() {
+            const canvas = document.getElementById('tideChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dataArray = surfData['wushi'].hourlyTides;
+            const width = canvas.parentElement.clientWidth || 390;
+            const height = canvas.parentElement.clientHeight || 160;
+            canvas.width = width;
+            canvas.height = height;
+
+            const paddingLeft = 25, paddingRight = 15, paddingTop = 30, paddingBottom = 25;
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+            const hoursAxis = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'];
+            
+            const maxVal = Math.max(...dataArray) + 0.3;
+            const minVal = Math.min(...dataArray) - 0.3;
+            
+            const points = [];
+            for (let i = 0; i < dataArray.length; i++) {
+                const x = paddingLeft + (i / (dataArray.length - 1)) * chartWidth;
+                const y = paddingTop + chartHeight - ((dataArray[i] - minVal) / (maxVal - minVal)) * chartHeight;
+                points.push({ x, y, value: dataArray[i] });
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.lineTo(width - paddingRight, height - paddingBottom);
+            ctx.lineTo(paddingLeft, height - paddingBottom);
+            ctx.closePath();
+            let gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+            gradient.addColorStop(0, 'rgba(45, 212, 191, 0.7)');
+            gradient.addColorStop(1, 'rgba(13, 148, 136, 0.05)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i+1].x) / 2;
+                const yc = (points[i].y + points[i+1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+            ctx.strokeStyle = '#0d9488';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#444444';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+
+            points.forEach((p, idx) => {
+                ctx.fillStyle = '#666666';
+                ctx.fillText(hoursAxis[idx], p.x, height - 8);
+            });
+
+            const specificLabels = [
+                { timeStr: '06:40', value: 0.8 },
+                { timeStr: '11:55', value: 1.4 },
+                { timeStr: '10:00', value: -0.3, isOrange: true } 
+            ];
+
+            specificLabels.forEach(label => {
+                const [h, m] = label.timeStr.split(':');
+                const timeInHours = parseInt(h) + parseInt(m) / 60;
+                const x = paddingLeft + (timeInHours / 24) * chartWidth;
+                const y = paddingTop + chartHeight - ((label.value - minVal) / (maxVal - minVal)) * chartHeight;
+                
+                ctx.fillStyle = '#333333';
+                ctx.fillText(`${label.timeStr}`, x, y - 25);
+                ctx.fillStyle = label.isOrange ? '#f97316' : '#333333';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText(`${label.value}`, x, y - 12);
+                ctx.font = '11px sans-serif'; 
+
+                ctx.beginPath();
+                ctx.arc(x, y, label.isOrange ? 5 : 3.5, 0, 2 * Math.PI);
+                ctx.fillStyle = label.isOrange ? '#f97316' : '#475569';
+                ctx.fill();
             });
 
             ctx.beginPath();
