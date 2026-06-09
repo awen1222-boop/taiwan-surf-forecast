@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>台灣衝浪浪況</title>
 
@@ -10,18 +11,41 @@
 
 <style>
 
+*{
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
 body{
-    background:#f4f4f4;
-    font-family:Arial;
-    margin:20px;
+    margin:0;
+    background:#eef3f7;
+    padding:15px;
 }
 
 .container{
-    max-width:420px;
+    max-width:500px;
     margin:auto;
 }
 
-.card-row{
+.header{
+    margin-bottom:15px;
+}
+
+select{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:18px;
+}
+
+.score{
+    text-align:center;
+    font-size:30px;
+    margin-bottom:10px;
+}
+
+.cards{
     display:flex;
     gap:10px;
 }
@@ -29,114 +53,169 @@ body{
 .card{
     flex:1;
     background:white;
-    border-radius:10px;
+    border-radius:12px;
     overflow:hidden;
-    box-shadow:0 2px 8px rgba(0,0,0,.15);
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
 }
 
-.card-top{
+.card-header{
     padding:20px;
+    color:white;
     text-align:center;
-}
-
-.card-value{
-    font-size:42px;
-    font-weight:bold;
-}
-
-.card-sub{
-    font-size:18px;
-    color:#666;
 }
 
 .wave{
     background:#1976d2;
-    color:white;
 }
 
 .wind{
-    background:#c9c53d;
-    color:white;
+    background:#c7c63f;
 }
 
-.info{
-    margin-top:10px;
-    background:white;
-    border-radius:10px;
-    padding:15px;
-    box-shadow:0 2px 8px rgba(0,0,0,.15);
+.big{
+    font-size:42px;
+    font-weight:bold;
 }
 
-.info-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    text-align:center;
-}
-
-.info-item{
+.unit{
     font-size:18px;
 }
 
-canvas{
-    margin-top:10px;
-    background:white;
-    border-radius:10px;
+.card-footer{
+    text-align:center;
     padding:10px;
+    font-size:20px;
+}
+
+.info{
+    margin-top:12px;
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    text-align:center;
+    gap:10px;
+}
+
+.item{
+    font-size:15px;
+}
+
+.item span{
+    display:block;
+    margin-top:5px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.chart-card{
+    margin-top:12px;
+    background:white;
+    border-radius:12px;
+    padding:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+}
+
+.loading{
+    text-align:center;
+    padding:20px;
 }
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-    <div class="card-row">
+    <div class="header">
+
+        <select id="spotSelect">
+            <option value="fulong">福隆</option>
+            <option value="wushi" selected>烏石港</option>
+            <option value="jici">磯崎</option>
+        </select>
+
+    </div>
+
+    <div class="score" id="surfScore">
+        ★★★
+    </div>
+
+    <div class="cards">
 
         <div class="card">
-            <div class="card-top wave">
-                <div class="card-value" id="waveHeight">--</div>
-                <div>m</div>
+
+            <div class="card-header wave">
+
+                🌊
+
+                <div class="big" id="waveHeight">
+                    --
+                </div>
+
+                <div class="unit">
+                    m
+                </div>
+
             </div>
 
-            <div class="card-sub" id="wavePeriod">
-                -- s
+            <div class="card-footer">
+                週期 <span id="wavePeriod">--</span> s
             </div>
+
         </div>
 
         <div class="card">
-            <div class="card-top wind">
-                <div class="card-value" id="windSpeed">--</div>
-                <div>m/s</div>
+
+            <div class="card-header wind">
+
+                💨
+
+                <div class="big" id="windSpeed">
+                    --
+                </div>
+
+                <div class="unit">
+                    m/s
+                </div>
+
             </div>
 
-            <div class="card-sub" id="windDir">
-                --
+            <div class="card-footer">
+                <span id="windDirection">--</span>°
             </div>
+
         </div>
 
     </div>
 
     <div class="info">
 
-        <div class="info-grid">
+        <div class="grid">
 
-            <div class="info-item">
-                ☀️<br>
+            <div class="item">
+                🌅
                 <span id="sunrise">--</span>
             </div>
 
-            <div class="info-item">
-                🌅<br>
+            <div class="item">
+                🌇
                 <span id="sunset">--</span>
             </div>
 
-            <div class="info-item">
-                🌡️<br>
-                <span id="temp">--</span>°
+            <div class="item">
+                🌡️
+                <span id="temp">--</span>
             </div>
 
-            <div class="info-item">
-                UV<br>
+            <div class="item">
+                UV
                 <span id="uv">--</span>
             </div>
 
@@ -144,109 +223,182 @@ canvas{
 
     </div>
 
-    <canvas id="waveChart"></canvas>
+    <div class="chart-card">
+        <canvas id="waveChart"></canvas>
+    </div>
 
 </div>
 
 <script>
 
-const lat = 24.867;
-const lon = 121.842;
+const spots = {
 
-// 烏石港
+    fulong:{
+        name:"福隆",
+        lat:25.021,
+        lon:121.944
+    },
+
+    wushi:{
+        name:"烏石港",
+        lat:24.867,
+        lon:121.842
+    },
+
+    jici:{
+        name:"磯崎",
+        lat:23.742,
+        lon:121.557
+    }
+
+};
+
+let chart;
+
+function surfScore(height,period){
+
+    let score = 1;
+
+    if(height >= 0.5) score++;
+    if(height >= 1.0) score++;
+    if(period >= 8) score++;
+    if(period >= 10) score++;
+
+    return "★".repeat(score);
+
+}
 
 async function loadData(){
 
-const url =
-`https://api.open-meteo.com/v1/forecast
-?latitude=${lat}
-&longitude=${lon}
-&hourly=temperature_2m,uv_index
-&daily=sunrise,sunset
-&current=temperature_2m
-&timezone=Asia/Taipei`;
+    const selected =
+        document.getElementById("spotSelect").value;
 
-const marine =
-`https://marine-api.open-meteo.com/v1/marine
-?latitude=${lat}
-&longitude=${lon}
-&hourly=wave_height,wave_period,wave_direction`;
+    const spot = spots[selected];
 
-const wind =
-`https://api.open-meteo.com/v1/forecast
-?latitude=${lat}
-&longitude=${lon}
-&current=wind_speed_10m,wind_direction_10m`;
+    const weatherUrl =
+`https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&hourly=uv_index&daily=sunrise,sunset&timezone=Asia/Taipei`;
 
-const [
-    weather,
-    sea,
-    windData
-] = await Promise.all([
-    fetch(url).then(r=>r.json()),
-    fetch(marine).then(r=>r.json()),
-    fetch(wind).then(r=>r.json())
-]);
+    const marineUrl =
+`https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}&hourly=wave_height,wave_period,wave_direction&timezone=Asia/Taipei`;
 
-document.getElementById("waveHeight").innerText =
-sea.hourly.wave_height[0].toFixed(1);
+    try{
 
-document.getElementById("wavePeriod").innerText =
-sea.hourly.wave_period[0].toFixed(1)+" s";
+        const [weather, marine] =
+        await Promise.all([
+            fetch(weatherUrl).then(r=>r.json()),
+            fetch(marineUrl).then(r=>r.json())
+        ]);
 
-document.getElementById("windSpeed").innerText =
-Math.round(windData.current.wind_speed_10m);
+        const waveHeight =
+            marine.hourly.wave_height[0];
 
-document.getElementById("windDir").innerText =
-windData.current.wind_direction_10m+"°";
+        const wavePeriod =
+            marine.hourly.wave_period[0];
 
-document.getElementById("sunrise").innerText =
-weather.daily.sunrise[0].substring(11,16);
+        document.getElementById("waveHeight")
+            .innerText = waveHeight.toFixed(1);
 
-document.getElementById("sunset").innerText =
-weather.daily.sunset[0].substring(11,16);
+        document.getElementById("wavePeriod")
+            .innerText = wavePeriod.toFixed(1);
 
-document.getElementById("temp").innerText =
-weather.current.temperature_2m;
+        document.getElementById("windSpeed")
+            .innerText = Math.round(
+                weather.current.wind_speed_10m
+            );
 
-document.getElementById("uv").innerText =
-Math.max(...weather.hourly.uv_index);
+        document.getElementById("windDirection")
+            .innerText =
+                weather.current.wind_direction_10m;
 
-createChart(sea);
+        document.getElementById("temp")
+            .innerText =
+                weather.current.temperature_2m + "°";
+
+        document.getElementById("sunrise")
+            .innerText =
+                weather.daily.sunrise[0]
+                .substring(11,16);
+
+        document.getElementById("sunset")
+            .innerText =
+                weather.daily.sunset[0]
+                .substring(11,16);
+
+        document.getElementById("uv")
+            .innerText =
+                Math.max(...weather.hourly.uv_index)
+                .toFixed(1);
+
+        document.getElementById("surfScore")
+            .innerText =
+                surfScore(
+                    waveHeight,
+                    wavePeriod
+                );
+
+        drawChart(marine);
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        alert("資料讀取失敗");
+
+    }
 
 }
 
-function createChart(sea){
+function drawChart(marine){
 
-const labels =
-sea.hourly.time.slice(0,24).map(t=>t.substring(11,16));
+    const labels =
+        marine.hourly.time
+        .slice(0,24)
+        .map(t=>t.substring(11,16));
 
-const values =
-sea.hourly.wave_height.slice(0,24);
+    const values =
+        marine.hourly.wave_height
+        .slice(0,24);
 
-new Chart(
-document.getElementById('waveChart'),
-{
-type:'line',
-data:{
-labels:labels,
-datasets:[{
-label:'浪高(m)',
-data:values
-}]
-},
-options:{
-responsive:true,
-plugins:{
-legend:{
-display:false
+    if(chart){
+        chart.destroy();
+    }
+
+    chart = new Chart(
+        document.getElementById('waveChart'),
+        {
+            type:'line',
+
+            data:{
+                labels:labels,
+
+                datasets:[{
+                    label:'浪高 (m)',
+                    data:values,
+                    tension:0.4
+                }]
+            },
+
+            options:{
+                responsive:true,
+
+                scales:{
+                    y:{
+                        beginAtZero:true
+                    }
+                }
+            }
+        }
+    );
+
 }
-}
-}
-}
+
+document
+.getElementById("spotSelect")
+.addEventListener(
+    "change",
+    loadData
 );
-
-}
 
 loadData();
 
