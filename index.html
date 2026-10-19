@@ -60,8 +60,17 @@
 
     <div class="sub-group" id="led_cond_vf" style="display: none;">
       <label>已知 Vf：</label>
-      順向壓降 Vf (V): <input type="number" id="led_vf_in" step="any" value="2.516">
-      <small style="color:#666;">(紅/黃光約 1.8~2.0V，綠/白/藍光低電流約 2.5~2.8V)</small>
+      LED 顏色: 
+      <select id="led_color_sel" onchange="setVfFromColor()">
+        <option value="custom">自訂數值</option>
+        <option value="1.8">紅/橘光 (約 1.8V)</option>
+        <option value="2.0">黃/黃綠光 (約 2.0V)</option>
+        <option value="2.516" selected>低電流綠/白 (約 2.5V)</option>
+        <option value="2.8">純綠/藍/白光 (約 2.8V)</option>
+        <option value="3.3">高亮白光 (約 3.3V)</option>
+      </select>
+      <span style="margin-left: 10px;">順向壓降 Vf (V):</span> 
+      <input type="number" id="led_vf_in" step="any" value="2.516" oninput="document.getElementById('led_color_sel').value='custom'">
     </div>
 
     <div class="sub-group" style="border-left-color: #e67e22;">
@@ -160,6 +169,13 @@
       }
     }
     return best;
+  }
+
+  function setVfFromColor() {
+    var val = document.getElementById('led_color_sel').value;
+    if (val !== 'custom') {
+      document.getElementById('led_vf_in').value = val;
+    }
   }
 
   function syncLedTarget() {
