@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>硬體工程師速算工具 版本 V01</title>
+<title>硬體工程師速算工具 版本 V02</title>
 <style>
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.6; color: #333; }
-  .container { max-width: 820px; margin: auto; }
+  .container { max-width: 880px; margin: auto; }
   .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
   h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
   .status-bar { text-align: center; font-size: 0.85em; margin-bottom: 20px; color: #e74c3c; font-weight: bold; }
   .status-bar.ok { color: #27ae60; }
   h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
   input, select { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-  input[type="number"] { width: 90px; }
+  input[type="number"] { width: 85px; }
   button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; transition: background 0.2s; font-weight: 600; }
   button:hover { background-color: #2980b9; }
   button:active { transform: translateY(1px); }
@@ -29,7 +29,7 @@
 <body>
 
 <div class="container">
-  <h1>硬體工程師速算工具 版本 V01</h1>
+  <h1>硬體工程師速算工具 版本 V02</h1>
   <div id="js_status" class="status-bar">🔴 腳本尚未載入 (請檢查程式碼是否複製完整)</div>
 
   <!-- 1. LED 輝度與限流電阻推算 -->
@@ -48,6 +48,7 @@
       <label>條件 A：</label>
       電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5">
       電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3">
+      系統串阻 (kΩ): <input type="number" id="led_sys_r1" step="any" value="1.2" oninput="syncSysResistor(this.value)">
       輝度 L1: <input type="number" id="led_l1" step="any" value="18">
     </div>
 
@@ -55,6 +56,7 @@
       <label>條件 B：</label>
       電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172">
       電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3">
+      系統串阻 (kΩ): <input type="number" id="led_sys_r2" step="any" value="1.2">
       輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="syncLedTarget()">
     </div>
 
@@ -76,16 +78,19 @@
     <div class="sub-group" style="border-left-color: #e67e22;">
       <label>目標條件：</label>
       目標電壓 Vt (V): <input type="number" id="led_vt" step="any" value="5">
+      系統串阻 (kΩ): <input type="number" id="led_sys_rt" step="any" value="1.2">
       目標輝度 Lt: <input type="number" id="led_lt" step="any" value="12">
       <button type="button" onclick="calcLedResistor()">計算目標電阻</button>
     </div>
 
     <p style="margin-bottom: 5px;">
-      理論目標電阻 R_new = <span id="led_r_res" class="res">9.450 kΩ (9450 Ω)</span>
-      <span id="led_detail_res" style="font-size: 0.9em; color: #555;">(推算 Vf = 2.516 V, 目標電流 If = 0.263 mA)</span>
+      需替換電阻 R_new = <span id="led_r_res" class="res">10.050 kΩ (10050 Ω)</span>
+      <span id="led_detail_res" style="font-size: 0.85em; color: #555; display: block; margin-top: 4px;">
+        (驗算: 目標總阻抗 11.250 kΩ - 串阻 1.2 kΩ = 10.050 kΩ ｜ Vf = 2.516 V ｜ 目標電流 = 0.221 mA)
+      </span>
     </p>
     <div id="led_std_res" class="std-res-box">
-      建議標準阻值：<b>E96 (1%)</b> 選 <b>9.53 kΩ</b> (預估輝度 11.90) ｜ <b>E24 (5%)</b> 選 <b>9.1 kΩ</b> (預估輝度 12.46)
+      建議標準阻值 (已扣除串阻)：<b>E96 (1%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05) ｜ <b>E24 (5%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05)
     </div>
   </div>
 
@@ -182,6 +187,11 @@
     document.getElementById('led_lt').value = document.getElementById('led_l2').value;
   }
 
+  function syncSysResistor(val) {
+    document.getElementById('led_sys_r2').value = val;
+    document.getElementById('led_sys_rt').value = val;
+  }
+
   function toggleLedMode() {
     var mode = document.getElementById('led_mode').value;
     document.getElementById('led_cond_b').style.display = (mode === 'two_point') ? 'block' : 'none';
@@ -193,11 +203,16 @@
     toggleLedMode();
     document.getElementById('led_v1').value = 5;
     document.getElementById('led_r1').value = 6.3;
+    document.getElementById('led_sys_r1').value = 1.2;
     document.getElementById('led_l1').value = 18;
+
     document.getElementById('led_v2').value = 4.172;
     document.getElementById('led_r2').value = 6.3;
+    document.getElementById('led_sys_r2').value = 1.2;
     document.getElementById('led_l2').value = 12;
+
     document.getElementById('led_vt').value = 5;
+    document.getElementById('led_sys_rt').value = 1.2;
     document.getElementById('led_lt').value = 12;
     calcLedResistor();
   }
@@ -206,14 +221,18 @@
     var mode = document.getElementById('led_mode').value;
     var v1 = parseFloat(document.getElementById('led_v1').value);
     var r1 = parseFloat(document.getElementById('led_r1').value);
+    var sys_r1 = parseFloat(document.getElementById('led_sys_r1').value) || 0;
     var l1 = parseFloat(document.getElementById('led_l1').value);
     var vt = parseFloat(document.getElementById('led_vt').value);
+    var sys_rt = parseFloat(document.getElementById('led_sys_rt').value) || 0;
     var lt = parseFloat(document.getElementById('led_lt').value);
+
+    var R1_total = r1 + sys_r1;
 
     var rRes = document.getElementById('led_r_res');
     var detailRes = document.getElementById('led_detail_res');
 
-    if (isNaN(v1) || isNaN(r1) || isNaN(l1) || isNaN(vt) || isNaN(lt) || r1 <= 0 || l1 <= 0 || lt <= 0) {
+    if (isNaN(v1) || isNaN(r1) || isNaN(l1) || isNaN(vt) || isNaN(lt) || R1_total <= 0 || l1 <= 0 || lt <= 0) {
       rRes.innerText = "⚠️ 請確認條件 A 與目標條件數值皆已正確填寫！";
       detailRes.innerText = "";
       return;
@@ -223,15 +242,19 @@
     if (mode === 'two_point') {
       var v2 = parseFloat(document.getElementById('led_v2').value);
       var r2 = parseFloat(document.getElementById('led_r2').value);
+      var sys_r2 = parseFloat(document.getElementById('led_sys_r2').value) || 0;
       var l2 = parseFloat(document.getElementById('led_l2').value);
-      if (isNaN(v2) || isNaN(r2) || isNaN(l2) || r2 <= 0) {
+      
+      var R2_total = r2 + sys_r2;
+
+      if (isNaN(v2) || isNaN(r2) || isNaN(l2) || R2_total <= 0) {
         rRes.innerText = "⚠️ 請填寫完整的條件 B 數據！";
         detailRes.innerText = "";
         return;
       }
-      var k = (l2 * r2) / (l1 * r1);
+      var k = (l2 * R2_total) / (l1 * R1_total);
       if (Math.abs(1 - k) < 1e-6) {
-        rRes.innerText = "⚠️ 條件 A 與 B 電流比例相同，無法反推 Vf，請改用「已知 Vf」模式！";
+        rRes.innerText = "⚠️ 條件 A 與 B 總阻抗與電流比例相同，無法反推 Vf！";
         detailRes.innerText = "";
         return;
       }
@@ -251,19 +274,29 @@
       return;
     }
 
-    var if1 = (v1 - vf) / r1;
+    var if1 = (v1 - vf) / R1_total;
     var if_target = if1 * (lt / l1);
-    var r_new = (vt - vf) / if_target;
+    var r_target_total = (vt - vf) / if_target;
+    var r_new = r_target_total - sys_rt; // 扣除系統串阻得出「需替換電阻」
+
+    if (r_new < 0) {
+      rRes.innerText = "⚠️ 錯誤：所需替換電阻為負值 (" + r_new.toFixed(3) + " kΩ)";
+      detailRes.innerText = "(目前的系統串阻已過大，無法達到目標輝度所需電流)";
+      document.getElementById('led_std_res').innerHTML = "請重新確認目標輝度或減少系統串接電阻。";
+      return;
+    }
 
     var e96 = findClosestE(r_new, E96_BASE);
     var e24 = findClosestE(r_new, E24_BASE);
-    var lum_e96 = lt * (r_new / e96);
-    var lum_e24 = lt * (r_new / e24);
+    
+    // 預估輝度計算基於「總阻抗 (標準電阻 + 系統串阻)」來計算誤差
+    var lum_e96 = lt * (r_target_total / (e96 + sys_rt));
+    var lum_e24 = lt * (r_target_total / (e24 + sys_rt));
 
     rRes.innerText = r_new.toFixed(3) + " kΩ (" + (r_new * 1000).toFixed(0) + " Ω)";
-    detailRes.innerText = "(推算 Vf = " + vf.toFixed(3) + " V, 目標電流 If = " + if_target.toFixed(3) + " mA)";
+    detailRes.innerText = "(驗算: 目標總阻抗 " + r_target_total.toFixed(3) + " kΩ - 串阻 " + sys_rt.toFixed(3) + " kΩ = " + r_new.toFixed(3) + " kΩ ｜ Vf = " + vf.toFixed(3) + " V ｜ 目標電流 = " + if_target.toFixed(3) + " mA)";
     document.getElementById('led_std_res').innerHTML =
-      "建議標準阻值：<b>E96 (1%)</b> 選 <b>" + e96 + " kΩ</b> (預估輝度 " + lum_e96.toFixed(2) + ") ｜ " +
+      "建議標準阻值 (已扣除串阻)：<b>E96 (1%)</b> 選 <b>" + e96 + " kΩ</b> (預估輝度 " + lum_e96.toFixed(2) + ") ｜ " +
       "<b>E24 (5%)</b> 選 <b>" + e24 + " kΩ</b> (預估輝度 " + lum_e24.toFixed(2) + ")";
   }
 
