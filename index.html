@@ -16,7 +16,7 @@
   .status-bar.ok { color: #27ae60; }
   h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; margin-top: 0; font-size: 1.25em; font-weight: 600; }
 
-  /* 輸入框群組防斷行 (核心修復) */
+  /* 輸入框群組防斷行 */
   .item-box { display: inline-flex; align-items: center; white-space: nowrap; margin-right: 15px; margin-bottom: 8px; font-size: 0.95em; color: #34495e; }
   .item-box input, .item-box select { margin-left: 6px; }
   
@@ -66,17 +66,17 @@
     <div class="sub-group">
       <label>條件 A：</label>
       <span class="item-box">電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5"></span>
-      <span class="item-box">電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3"></span>
+      <span class="item-box">電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value=""></span>
       <span class="item-box">系統串阻 (kΩ): <input type="number" id="led_sys_r1" step="any" value="1.2" oninput="syncSysResistor(this.value)"></span>
-      <span class="item-box">輝度 L1: <input type="number" id="led_l1" step="any" value="18"></span>
+      <span class="item-box">輝度 L1: <input type="number" id="led_l1" step="any" value=""></span>
     </div>
 
     <div class="sub-group" id="led_cond_b">
       <label>條件 B：</label>
-      <span class="item-box">電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172"></span>
-      <span class="item-box">電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3"></span>
+      <span class="item-box">電壓 V2 (V): <input type="number" id="led_v2" step="any" value=""></span>
+      <span class="item-box">電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value=""></span>
       <span class="item-box">系統串阻 (kΩ): <input type="number" id="led_sys_r2" step="any" value="1.2"></span>
-      <span class="item-box">輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="syncLedTarget()"></span>
+      <span class="item-box">輝度 L2: <input type="number" id="led_l2" step="any" value="" oninput="syncLedTarget()"></span>
     </div>
 
     <div class="sub-group" id="led_cond_vf" style="display: none;">
@@ -103,14 +103,12 @@
     </div>
 
     <div class="res-block" style="border: none; padding-left: 5px; background: transparent;">
-      <div style="margin-bottom: 6px;">需替換電阻 R_new = <span id="led_r_res" class="res">10.050 kΩ (10050 Ω)</span></div>
-      <div id="led_detail_res" style="font-size: 0.9em; color: #7f8c8d;">
-        (驗算: 目標總阻抗 11.250 kΩ - 串阻 1.2 kΩ = 10.050 kΩ ｜ Vf = 2.516 V ｜ 目標電流 = 0.221 mA)
-      </div>
+      <div style="margin-bottom: 6px;">需替換電阻 R_new = <span id="led_r_res" class="res" style="color: #7f8c8d;">等待輸入條件...</span></div>
+      <div id="led_detail_res" style="font-size: 0.9em; color: #7f8c8d;"></div>
     </div>
     
     <div id="led_std_res" class="std-res-box">
-      建議標準阻值 (已扣除串阻)：<b>E96 (1%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05) ｜ <b>E24 (5%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05)
+      請填寫數值後點擊「計算目標電阻」。
     </div>
   </div>
 
@@ -274,8 +272,10 @@
     var detailRes = document.getElementById('led_detail_res');
 
     if (isNaN(v1) || isNaN(r1) || isNaN(l1) || isNaN(vt) || isNaN(lt) || R1_total <= 0 || l1 <= 0 || lt <= 0) {
+      rRes.style.color = "#e74c3c";
       rRes.innerText = "⚠️ 請確認條件 A 與目標條件數值皆已正確填寫！";
       detailRes.innerText = "";
+      document.getElementById('led_std_res').innerHTML = "請填寫數值後點擊「計算目標電阻」。";
       return;
     }
 
@@ -288,12 +288,14 @@
       var R2_total = r2 + sys_r2;
 
       if (isNaN(v2) || isNaN(r2) || isNaN(l2) || R2_total <= 0) {
+        rRes.style.color = "#e74c3c";
         rRes.innerText = "⚠️ 請填寫完整的條件 B 數據！";
         detailRes.innerText = "";
         return;
       }
       var k = (l2 * R2_total) / (l1 * R1_total);
       if (Math.abs(1 - k) < 1e-6) {
+        rRes.style.color = "#e74c3c";
         rRes.innerText = "⚠️ 條件 A 與 B 總阻抗與電流比例相同，無法反推 Vf！";
         detailRes.innerText = "";
         return;
@@ -302,6 +304,7 @@
     } else {
       vf = parseFloat(document.getElementById('led_vf_in').value);
       if (isNaN(vf)) {
+        rRes.style.color = "#e74c3c";
         rRes.innerText = "⚠️ 請輸入已知 Vf 數值！";
         detailRes.innerText = "";
         return;
@@ -309,6 +312,7 @@
     }
 
     if (vf >= v1 || vf >= vt) {
+      rRes.style.color = "#e74c3c";
       rRes.innerText = "⚠️ 推算或設定的 Vf (" + vf.toFixed(3) + "V) 大於供電電壓，LED 無法導通！";
       detailRes.innerText = "";
       return;
@@ -320,6 +324,7 @@
     var r_new = r_target_total - sys_rt;
 
     if (r_new < 0) {
+      rRes.style.color = "#e74c3c";
       rRes.innerText = "⚠️ 錯誤：所需替換電阻為負值 (" + r_new.toFixed(3) + " kΩ)";
       detailRes.innerText = "(目前的系統串阻已過大，無法達到目標輝度所需電流)";
       document.getElementById('led_std_res').innerHTML = "請重新確認目標輝度或減少系統串接電阻。";
@@ -332,6 +337,7 @@
     var lum_e96 = lt * (r_target_total / (e96 + sys_rt));
     var lum_e24 = lt * (r_target_total / (e24 + sys_rt));
 
+    rRes.style.color = "#e67e22";
     rRes.innerText = r_new.toFixed(3) + " kΩ (" + (r_new * 1000).toFixed(0) + " Ω)";
     detailRes.innerText = "(驗算: 目標總阻抗 " + r_target_total.toFixed(3) + " kΩ - 串阻 " + sys_rt.toFixed(3) + " kΩ = " + r_new.toFixed(3) + " kΩ ｜ Vf = " + vf.toFixed(3) + " V ｜ 目標電流 = " + if_target.toFixed(3) + " mA)";
     document.getElementById('led_std_res').innerHTML =
@@ -429,7 +435,12 @@
     var statusEl = document.getElementById('js_status');
     statusEl.innerText = "🟢 系統腳本運作正常 (JavaScript Ready)";
     statusEl.className = "status-bar ok";
-    calcLedResistor();
+    // 網頁載入時不再直接報錯，保持初始提示狀態
+    var v1 = parseFloat(document.getElementById('led_v1').value);
+    var r1 = parseFloat(document.getElementById('led_r1').value);
+    if (!isNaN(v1) && !isNaN(r1)) {
+        calcLedResistor();
+    }
   };
 </script>
 </body>
