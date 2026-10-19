@@ -5,25 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>硬體工程師速算工具 版本 V02</title>
 <style>
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.6; color: #333; }
-  .container { max-width: 880px; margin: auto; }
-  .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
-  .status-bar { text-align: center; font-size: 0.85em; margin-bottom: 20px; color: #e74c3c; font-weight: bold; }
+  /* 基礎排版與色彩 */
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2vw; background-color: #f0f2f5; line-height: 1.6; color: #333; }
+  .container { max-width: 920px; margin: auto; }
+  .card { background: white; padding: 24px 28px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: transform 0.2s; }
+  
+  /* 標題與狀態列 */
+  h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; font-weight: 700; letter-spacing: 1px; }
+  .status-bar { text-align: center; font-size: 0.85em; margin-bottom: 25px; color: #e74c3c; font-weight: bold; }
   .status-bar.ok { color: #27ae60; }
-  h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
-  input, select { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-  input[type="number"] { width: 85px; }
-  button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; transition: background 0.2s; font-weight: 600; }
-  button:hover { background-color: #2980b9; }
-  button:active { transform: translateY(1px); }
-  .btn-secondary { background-color: #7f8c8d; font-size: 0.85em; padding: 6px 12px; }
-  .btn-secondary:hover { background-color: #636e72; }
-  .res { font-weight: bold; color: #e67e22; }
-  .err { font-weight: bold; color: #e74c3c; }
-  .sub-group { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #3498db; }
-  .sub-group label { display: inline-block; min-width: 75px; font-weight: 600; font-size: 0.9em; color: #2c3e50; }
-  .std-res-box { margin-top: 8px; font-size: 0.9em; color: #2c3e50; background: #fff8e1; padding: 8px 12px; border-radius: 4px; border: 1px solid #ffe082; }
+  h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; margin-top: 0; font-size: 1.25em; font-weight: 600; }
+
+  /* 輸入框群組防斷行 (核心修復) */
+  .item-box { display: inline-flex; align-items: center; white-space: nowrap; margin-right: 15px; margin-bottom: 8px; font-size: 0.95em; color: #34495e; }
+  .item-box input, .item-box select { margin-left: 6px; }
+  
+  /* 表單元件美化 */
+  input, select { padding: 7px 10px; border: 1px solid #ced6e0; border-radius: 6px; outline: none; transition: all 0.2s ease; font-family: 'Segoe UI', monospace; font-size: 0.95em; }
+  input:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.15); }
+  input[type="number"] { width: 95px; }
+
+  /* 按鈕美化 */
+  button { padding: 8px 16px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 6px; transition: all 0.2s ease; font-weight: 600; font-size: 0.9em; margin-bottom: 8px; margin-right: 5px; box-shadow: 0 2px 4px rgba(52,152,219,0.2); }
+  button:hover { background-color: #2980b9; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(52,152,219,0.3); }
+  button:active { transform: translateY(1px); box-shadow: none; }
+  .btn-secondary { background-color: #95a5a6; box-shadow: 0 2px 4px rgba(149,165,166,0.2); }
+  .btn-secondary:hover { background-color: #7f8c8d; box-shadow: 0 4px 8px rgba(149,165,166,0.3); }
+
+  /* LED 專用子區塊 */
+  .sub-group { background-color: #f8f9fa; padding: 14px 18px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #3498db; display: flex; flex-wrap: wrap; align-items: center; }
+  .sub-group-orange { border-left-color: #e67e22; }
+  .sub-group label { display: inline-block; min-width: 75px; font-weight: 700; font-size: 0.95em; color: #2c3e50; margin-right: 5px; margin-bottom: 8px; }
+  
+  /* 結果顯示區塊 */
+  .calc-row { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 5px; }
+  .res-block { margin-top: 10px; background-color: #fdfdfe; padding: 12px 16px; border-radius: 6px; border: 1px dashed #bdc3c7; font-size: 0.95em; color: #2c3e50; }
+  .res { font-weight: bold; color: #e67e22; font-size: 1.05em; font-family: monospace; }
+  .std-res-box { margin-top: 12px; font-size: 0.95em; color: #2c3e50; background: #fff8e1; padding: 12px 16px; border-radius: 6px; border: 1px solid #ffe082; }
 </style>
 </head>
 <body>
@@ -35,60 +53,62 @@
   <!-- 1. LED 輝度與限流電阻推算 -->
   <div class="card">
     <h2>1. LED 輝度與限流電阻推算</h2>
-    <div style="margin-bottom: 8px;">
-      模式：
-      <select id="led_mode" onchange="toggleLedMode()">
-        <option value="two_point">雙點實驗數據反推 Vf (推薦)</option>
-        <option value="known_vf">已知 LED 順向壓降 (Vf)</option>
-      </select>
+    <div class="calc-row" style="margin-bottom: 12px;">
+      <span class="item-box" style="font-weight: 600;">模式：
+        <select id="led_mode" onchange="toggleLedMode()">
+          <option value="two_point">雙點實驗數據反推 Vf (推薦)</option>
+          <option value="known_vf">已知 LED 順向壓降 (Vf)</option>
+        </select>
+      </span>
       <button type="button" class="btn-secondary" onclick="loadLedExample()">載入預設範例</button>
     </div>
 
     <div class="sub-group">
       <label>條件 A：</label>
-      電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5">
-      電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3">
-      系統串阻 (kΩ): <input type="number" id="led_sys_r1" step="any" value="1.2" oninput="syncSysResistor(this.value)">
-      輝度 L1: <input type="number" id="led_l1" step="any" value="18">
+      <span class="item-box">電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5"></span>
+      <span class="item-box">電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3"></span>
+      <span class="item-box">系統串阻 (kΩ): <input type="number" id="led_sys_r1" step="any" value="1.2" oninput="syncSysResistor(this.value)"></span>
+      <span class="item-box">輝度 L1: <input type="number" id="led_l1" step="any" value="18"></span>
     </div>
 
     <div class="sub-group" id="led_cond_b">
       <label>條件 B：</label>
-      電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172">
-      電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3">
-      系統串阻 (kΩ): <input type="number" id="led_sys_r2" step="any" value="1.2">
-      輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="syncLedTarget()">
+      <span class="item-box">電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172"></span>
+      <span class="item-box">電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3"></span>
+      <span class="item-box">系統串阻 (kΩ): <input type="number" id="led_sys_r2" step="any" value="1.2"></span>
+      <span class="item-box">輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="syncLedTarget()"></span>
     </div>
 
     <div class="sub-group" id="led_cond_vf" style="display: none;">
       <label>已知 Vf：</label>
-      LED 顏色: 
-      <select id="led_color_sel" onchange="setVfFromColor()">
-        <option value="custom">自訂數值</option>
-        <option value="1.8">紅/橘光 (約 1.8V)</option>
-        <option value="2.0">黃/黃綠光 (約 2.0V)</option>
-        <option value="2.516" selected>低電流綠/白 (約 2.5V)</option>
-        <option value="2.8">純綠/藍/白光 (約 2.8V)</option>
-        <option value="3.3">高亮白光 (約 3.3V)</option>
-      </select>
-      <span style="margin-left: 10px;">順向壓降 Vf (V):</span> 
-      <input type="number" id="led_vf_in" step="any" value="2.516" oninput="document.getElementById('led_color_sel').value='custom'">
-    </div>
-
-    <div class="sub-group" style="border-left-color: #e67e22;">
-      <label>目標條件：</label>
-      目標電壓 Vt (V): <input type="number" id="led_vt" step="any" value="5">
-      系統串阻 (kΩ): <input type="number" id="led_sys_rt" step="any" value="1.2">
-      目標輝度 Lt: <input type="number" id="led_lt" step="any" value="12">
-      <button type="button" onclick="calcLedResistor()">計算目標電阻</button>
-    </div>
-
-    <p style="margin-bottom: 5px;">
-      需替換電阻 R_new = <span id="led_r_res" class="res">10.050 kΩ (10050 Ω)</span>
-      <span id="led_detail_res" style="font-size: 0.85em; color: #555; display: block; margin-top: 4px;">
-        (驗算: 目標總阻抗 11.250 kΩ - 串阻 1.2 kΩ = 10.050 kΩ ｜ Vf = 2.516 V ｜ 目標電流 = 0.221 mA)
+      <span class="item-box">LED 顏色: 
+        <select id="led_color_sel" onchange="setVfFromColor()">
+          <option value="custom">自訂數值</option>
+          <option value="1.8">紅/橘光 (約 1.8V)</option>
+          <option value="2.0">黃/黃綠光 (約 2.0V)</option>
+          <option value="2.516" selected>低電流綠/白 (約 2.5V)</option>
+          <option value="2.8">純綠/藍/白光 (約 2.8V)</option>
+          <option value="3.3">高亮白光 (約 3.3V)</option>
+        </select>
       </span>
-    </p>
+      <span class="item-box">順向壓降 Vf (V): <input type="number" id="led_vf_in" step="any" value="2.516" oninput="document.getElementById('led_color_sel').value='custom'"></span>
+    </div>
+
+    <div class="sub-group sub-group-orange">
+      <label>目標條件：</label>
+      <span class="item-box">目標電壓 Vt (V): <input type="number" id="led_vt" step="any" value="5"></span>
+      <span class="item-box">系統串阻 (kΩ): <input type="number" id="led_sys_rt" step="any" value="1.2"></span>
+      <span class="item-box">目標輝度 Lt: <input type="number" id="led_lt" step="any" value="12"></span>
+      <button type="button" onclick="calcLedResistor()" style="margin-left: auto; margin-bottom: 0;">計算目標電阻</button>
+    </div>
+
+    <div class="res-block" style="border: none; padding-left: 5px; background: transparent;">
+      <div style="margin-bottom: 6px;">需替換電阻 R_new = <span id="led_r_res" class="res">10.050 kΩ (10050 Ω)</span></div>
+      <div id="led_detail_res" style="font-size: 0.9em; color: #7f8c8d;">
+        (驗算: 目標總阻抗 11.250 kΩ - 串阻 1.2 kΩ = 10.050 kΩ ｜ Vf = 2.516 V ｜ 目標電流 = 0.221 mA)
+      </div>
+    </div>
+    
     <div id="led_std_res" class="std-res-box">
       建議標準阻值 (已扣除串阻)：<b>E96 (1%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05) ｜ <b>E24 (5%)</b> 選 <b>10 kΩ</b> (預估輝度 12.05)
     </div>
@@ -97,52 +117,74 @@
   <!-- 2. 分壓計算 -->
   <div class="card">
     <h2>2. 分壓計算 (Vout)</h2>
-    Vin: <input type="number" id="vin" step="any" placeholder="Vin (V)">
-    Ru: <input type="number" id="ru" step="any" placeholder="Ru (Ω/kΩ)">
-    Rd: <input type="number" id="rd" step="any" placeholder="Rd (Ω/kΩ)">
-    <button type="button" onclick="calcVoltage()">計算 Vout</button>
-    <p>Vout = <span id="vout_res" class="res">0</span> V</p>
+    <div class="calc-row">
+      <span class="item-box">Vin (V): <input type="number" id="vin" step="any"></span>
+      <span class="item-box">Ru (Ω/kΩ): <input type="number" id="ru" step="any"></span>
+      <span class="item-box">Rd (Ω/kΩ): <input type="number" id="rd" step="any"></span>
+      <button type="button" onclick="calcVoltage()">計算 Vout</button>
+    </div>
+    <div class="res-block">Vout = <span id="vout_res" class="res">0</span> V</div>
   </div>
 
   <!-- 3. 加熱片功率推算 -->
   <div class="card">
     <h2>3. 加熱片功率推算 (P=VI, V=IR)</h2>
-    <small>請輸入任意兩項進行推算：</small><br>
-    P (W): <input type="number" id="p_p" step="any" placeholder="W">
-    V (V): <input type="number" id="p_v" step="any" placeholder="V">
-    I (A): <input type="number" id="p_i" step="any" placeholder="A">
-    R (Ω): <input type="number" id="p_r" step="any" placeholder="Ω">
-    <button type="button" onclick="calcHeat()">推算</button>
-    <button type="button" class="btn-secondary" onclick="clearHeat()">清空</button>
-    <p id="heat_res" class="res">請輸入任意兩項數值</p>
+    <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px; font-weight: 600;">💡 請輸入任意兩項進行推算：</div>
+    <div class="calc-row">
+      <span class="item-box">P (W): <input type="number" id="p_p" step="any"></span>
+      <span class="item-box">V (V): <input type="number" id="p_v" step="any"></span>
+      <span class="item-box">I (A): <input type="number" id="p_i" step="any"></span>
+      <span class="item-box">R (Ω): <input type="number" id="p_r" step="any"></span>
+      <button type="button" onclick="calcHeat()">推算</button>
+      <button type="button" class="btn-secondary" onclick="clearHeat()">清空</button>
+    </div>
+    <div class="res-block" id="heat_res">請輸入任意兩項數值</div>
   </div>
 
   <!-- 4. 電池續航計算 -->
   <div class="card">
     <h2>4. 電池續航計算</h2>
-    容量 (mAh): <input type="number" id="bat_cap" step="any" placeholder="mAh">
-    電壓 (V): <input type="number" id="bat_v" step="any" placeholder="V">
-    功率 (W): <input type="number" id="bat_p" step="any" placeholder="W">
-    <button type="button" onclick="calcBattery()">計算時數</button>
-    <p>預估時數 = <span id="bat_res" class="res">0</span> 小時</p>
+    <div class="calc-row">
+      <span class="item-box">容量 (mAh): <input type="number" id="bat_cap" step="any"></span>
+      <span class="item-box">電壓 (V): <input type="number" id="bat_v" step="any"></span>
+      <span class="item-box">功率 (W): <input type="number" id="bat_p" step="any"></span>
+      <button type="button" onclick="calcBattery()">計算時數</button>
+    </div>
+    <div class="res-block">預估時數 = <span id="bat_res" class="res">0</span> 小時</div>
   </div>
 
   <!-- 5. 電容值換算 -->
   <div class="card">
     <h2>5. 電容值換算</h2>
-    數值: <input type="number" id="cap_val" step="any" placeholder="數值">
-    單位: <select id="cap_unit"><option value="pF">pF</option><option value="nF">nF</option><option value="uF">uF</option></select>
-    <button type="button" onclick="calcCap()">轉換</button>
-    <p id="cap_res" class="res">結果顯示</p>
+    <div class="calc-row">
+      <span class="item-box">數值: <input type="number" id="cap_val" step="any"></span>
+      <span class="item-box">單位: 
+        <select id="cap_unit">
+          <option value="pF">pF</option>
+          <option value="nF">nF</option>
+          <option value="uF">uF</option>
+        </select>
+      </span>
+      <button type="button" onclick="calcCap()">轉換</button>
+    </div>
+    <div class="res-block" id="cap_res">結果顯示</div>
   </div>
 
   <!-- 6. 長度換算 -->
   <div class="card">
     <h2>6. 長度換算</h2>
-    <input type="number" id="len_val" step="any" placeholder="數值">
-    <select id="len_unit"><option value="mil_mm">mil → mm</option><option value="mm_mil">mm → mil</option><option value="ps_inch">ps → inch</option></select>
-    <button type="button" onclick="calcLength()">轉換長度</button>
-    <p>結果 = <span id="len_res" class="res">0</span></p>
+    <div class="calc-row">
+      <span class="item-box">數值: <input type="number" id="len_val" step="any"></span>
+      <span class="item-box">單位: 
+        <select id="len_unit">
+          <option value="mil_mm">mil → mm</option>
+          <option value="mm_mil">mm → mil</option>
+          <option value="ps_inch">ps → inch</option>
+        </select>
+      </span>
+      <button type="button" onclick="calcLength()">轉換長度</button>
+    </div>
+    <div class="res-block">結果 = <span id="len_res" class="res">0</span></div>
   </div>
 
 </div>
@@ -194,8 +236,8 @@
 
   function toggleLedMode() {
     var mode = document.getElementById('led_mode').value;
-    document.getElementById('led_cond_b').style.display = (mode === 'two_point') ? 'block' : 'none';
-    document.getElementById('led_cond_vf').style.display = (mode === 'known_vf') ? 'block' : 'none';
+    document.getElementById('led_cond_b').style.display = (mode === 'two_point') ? 'flex' : 'none';
+    document.getElementById('led_cond_vf').style.display = (mode === 'known_vf') ? 'flex' : 'none';
   }
 
   function loadLedExample() {
@@ -228,7 +270,6 @@
     var lt = parseFloat(document.getElementById('led_lt').value);
 
     var R1_total = r1 + sys_r1;
-
     var rRes = document.getElementById('led_r_res');
     var detailRes = document.getElementById('led_detail_res');
 
@@ -244,7 +285,6 @@
       var r2 = parseFloat(document.getElementById('led_r2').value);
       var sys_r2 = parseFloat(document.getElementById('led_sys_r2').value) || 0;
       var l2 = parseFloat(document.getElementById('led_l2').value);
-      
       var R2_total = r2 + sys_r2;
 
       if (isNaN(v2) || isNaN(r2) || isNaN(l2) || R2_total <= 0) {
@@ -277,7 +317,7 @@
     var if1 = (v1 - vf) / R1_total;
     var if_target = if1 * (lt / l1);
     var r_target_total = (vt - vf) / if_target;
-    var r_new = r_target_total - sys_rt; // 扣除系統串阻得出「需替換電阻」
+    var r_new = r_target_total - sys_rt;
 
     if (r_new < 0) {
       rRes.innerText = "⚠️ 錯誤：所需替換電阻為負值 (" + r_new.toFixed(3) + " kΩ)";
@@ -289,7 +329,6 @@
     var e96 = findClosestE(r_new, E96_BASE);
     var e24 = findClosestE(r_new, E24_BASE);
     
-    // 預估輝度計算基於「總阻抗 (標準電阻 + 系統串阻)」來計算誤差
     var lum_e96 = lt * (r_target_total / (e96 + sys_rt));
     var lum_e24 = lt * (r_target_total / (e24 + sys_rt));
 
@@ -307,7 +346,7 @@
     var rd = parseFloat(document.getElementById('rd').value);
     var out = document.getElementById('vout_res');
     if (isNaN(vin) || isNaN(ru) || isNaN(rd)) {
-      out.innerText = "請填寫完整的 Vin, Ru, Rd 數值";
+      out.innerText = "請填寫完整的數值";
       return;
     }
     if ((ru + rd) === 0) {
@@ -353,7 +392,7 @@
     var p = parseFloat(document.getElementById('bat_p').value);
     var out = document.getElementById('bat_res');
     if (isNaN(cap) || isNaN(v) || isNaN(p) || p === 0) {
-      out.innerText = "請輸入完整容量、電壓與功率 (功率不可為0)";
+      out.innerText = "請填寫完整數值";
       return;
     }
     out.innerText = ((cap / 1000 * v) / p).toFixed(2);
@@ -365,7 +404,7 @@
     var u = document.getElementById('cap_unit').value;
     var out = document.getElementById('cap_res');
     if (isNaN(v)) {
-      out.innerText = "請輸入電容數值";
+      out.innerText = "請輸入數值";
       return;
     }
     var p = (u === 'pF') ? v : (u === 'nF') ? v * 1000 : v * 1000000;
@@ -378,7 +417,7 @@
     var u = document.getElementById('len_unit').value;
     var out = document.getElementById('len_res');
     if (isNaN(v)) {
-      out.innerText = "請輸入長度數值";
+      out.innerText = "請輸入數值";
       return;
     }
     var res = (u === 'mil_mm') ? v * 0.0254 : (u === 'mm_mil') ? v / 0.0254 : v * 0.006;
