@@ -61,3 +61,287 @@
     容量 (mAh): <input type="number" id="bat_cap" step="any" placeholder="mAh">
     電壓 (V): <input type="number" id="bat_v" step="any" placeholder="V">
     功率 (W): <input type="number" id="bat_p" step="any" placeholder="W">
+    <button type="button" onclick="calcBattery()">計算時數</button>
+    <p>預估時數 = <span id="bat_res" class="res">0</span> 小時</p>
+  </div>
+
+  <!-- 4. 電容值換算 -->
+  <div class="card">
+    <h2>4. 電容值換算</h2>
+    數值: <input type="number" id="cap_val" step="any" placeholder="數值">
+    單位: <select id="cap_unit"><option value="pF">pF</option><option value="nF">nF</option><option value="uF">uF</option></select>
+    <button type="button" onclick="calcCap()">轉換</button>
+    <p id="cap_res" class="res">結果顯示</p>
+  </div>
+
+  <!-- 5. 長度與傳播延遲換算 -->
+  <div class="card">
+    <h2>5. 長度與歐姆定律</h2>
+    <input type="number" id="len_val" step="any" placeholder="數值">
+    <select id="len_unit"><option value="mil_mm">mil → mm</option><option value="mm_mil">mm → mil</option><option value="ps_inch">ps → inch</option></select>
+    <button type="button" onclick="calcLength()">轉換長度</button>
+    <p>結果 = <span id="len_res" class="res">0</span></p>
+  </div>
+
+  <!-- 6. LED 輝度與限流電阻推算 -->
+  <div class="card">
+    <h2>6. LED 輝度與限流電阻推算</h2>
+    <div style="margin-bottom: 8px;">
+      模式：
+      <select id="led_mode" onchange="toggleLedMode()">
+        <option value="two_point">雙點實驗數據反推 Vf (推薦)</option>
+        <option value="known_vf">已知 LED 順向壓降 (Vf)</option>
+      </select>
+      <button type="button" class="btn-secondary" onclick="loadLedExample()">載入預設範例</button>
+    </div>
+
+    <div class="sub-group">
+      <label>條件 A：</label>
+      電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5">
+      電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3">
+      輝度 L1: <input type="number" id="led_l1" step="any" value="18">
+    </div>
+
+    <div class="sub-group" id="led_cond_b">
+      <label>條件 B：</label>
+      電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172">
+      電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3">
+      輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="syncLedTarget()">
+    </div>
+
+    <div class="sub-group" id="led_cond_vf" style="display: none;">
+      <label>已知 Vf：</label>
+      順向壓降 Vf (V): <input type="number" id="led_vf_in" step="any" value="2.516">
+      <small style="color:#666;">(紅/黃光約 1.8~2.0V，綠/白/藍光低電流約 2.5~2.8V)</small>
+    </div>
+
+    <div class="sub-group" style="border-left-color: #e67e22;">
+      <label>目標條件：</label>
+      目標電壓 Vt (V): <input type="number" id="led_vt" step="any" value="5">
+      目標輝度 Lt: <input type="number" id="led_lt" step="any" value="12">
+      <button type="button" onclick="calcLedResistor()">計算目標電阻</button>
+    </div>
+
+    <p style="margin-bottom: 5px;">
+      理論目標電阻 R_new = <span id="led_r_res" class="res">9.450 kΩ (9450 Ω)</span>
+      <span id="led_detail_res" style="font-size: 0.9em; color: #555;">(推算 Vf = 2.516 V, 目標電流 If = 0.263 mA)</span>
+    </p>
+    <div id="led_std_res" class="std-res-box">
+      建議標準阻值：<b>E96 (1%)</b> 選 <b>9.53 kΩ</b> (預估輝度 11.90) ｜ <b>E24 (5%)</b> 選 <b>9.1 kΩ</b> (預估輝度 12.46)
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. 分壓計算
+  function calcVoltage() {
+    var vin = parseFloat(document.getElementById('vin').value);
+    var ru = parseFloat(document.getElementById('ru').value);
+    var rd = parseFloat(document.getElementById('rd').value);
+    var out = document.getElementById('vout_res');
+    if (isNaN(vin) || isNaN(ru) || isNaN(rd)) {
+      out.innerText = "請填寫完整的 Vin, Ru, Rd 數值";
+      return;
+    }
+    if ((ru + rd) === 0) {
+      out.innerText = "Ru + Rd 不能為 0";
+      return;
+    }
+    out.innerText = (vin * rd / (ru + rd)).toFixed(3);
+  }
+
+  // 2. 加熱片功率推算
+  function calcHeat() {
+    var p = parseFloat(document.getElementById('p_p').value);
+    var v = parseFloat(document.getElementById('p_v').value);
+    var i = parseFloat(document.getElementById('p_i').value);
+    var r = parseFloat(document.getElementById('p_r').value);
+    var out = document.getElementById('heat_res');
+
+    if (!isNaN(p) && !isNaN(v)) { i = p / v; r = (v * v) / p; }
+    else if (!isNaN(p) && !isNaN(i)) { v = p / i; r = p / (i * i); }
+    else if (!isNaN(p) && !isNaN(r)) { v = Math.sqrt(p * r); i = Math.sqrt(p / r); }
+    else if (!isNaN(v) && !isNaN(i)) { p = v * i; r = v / i; }
+    else if (!isNaN(v) && !isNaN(r)) { p = (v * v) / r; i = v / r; }
+    else if (!isNaN(i) && !isNaN(r)) { p = (i * i) * r; v = i * r; }
+    else {
+      out.innerText = "⚠️ 請至少輸入任意兩項數值！";
+      return;
+    }
+    out.innerText = "結果：P = " + p.toFixed(2) + " W, V = " + v.toFixed(2) + " V, I = " + i.toFixed(3) + " A, R = " + r.toFixed(2) + " Ω";
+  }
+
+  function clearHeat() {
+    document.getElementById('p_p').value = '';
+    document.getElementById('p_v').value = '';
+    document.getElementById('p_i').value = '';
+    document.getElementById('p_r').value = '';
+    document.getElementById('heat_res').innerText = '請輸入任意兩項數值';
+  }
+
+  // 3. 電池續航計算
+  function calcBattery() {
+    var cap = parseFloat(document.getElementById('bat_cap').value);
+    var v = parseFloat(document.getElementById('bat_v').value);
+    var p = parseFloat(document.getElementById('bat_p').value);
+    var out = document.getElementById('bat_res');
+    if (isNaN(cap) || isNaN(v) || isNaN(p) || p === 0) {
+      out.innerText = "請輸入完整容量、電壓與功率 (功率不可為0)";
+      return;
+    }
+    out.innerText = ((cap / 1000 * v) / p).toFixed(2);
+  }
+
+  // 4. 電容值換算
+  function calcCap() {
+    var v = parseFloat(document.getElementById('cap_val').value);
+    var u = document.getElementById('cap_unit').value;
+    var out = document.getElementById('cap_res');
+    if (isNaN(v)) {
+      out.innerText = "請輸入電容數值";
+      return;
+    }
+    var p = (u === 'pF') ? v : (u === 'nF') ? v * 1000 : v * 1000000;
+    out.innerText = p + " pF / " + (p / 1000).toFixed(3) + " nF / " + (p / 1000000).toFixed(6) + " uF";
+  }
+
+  // 5. 長度換算
+  function calcLength() {
+    var v = parseFloat(document.getElementById('len_val').value);
+    var u = document.getElementById('len_unit').value;
+    var out = document.getElementById('len_res');
+    if (isNaN(v)) {
+      out.innerText = "請輸入長度數值";
+      return;
+    }
+    var res = (u === 'mil_mm') ? v * 0.0254 : (u === 'mm_mil') ? v / 0.0254 : v * 0.006;
+    out.innerText = res.toFixed(4);
+  }
+
+  // 6. LED 輝度與限流電阻推算
+  var E24_BASE = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1];
+  var E96_BASE = [
+    1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27, 1.30, 1.33, 1.37, 1.40, 1.43,
+    1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69, 1.74, 1.78, 1.82, 1.87, 1.91, 1.96, 2.00, 2.05, 2.10,
+    2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61, 2.67, 2.74, 2.80, 2.87, 2.94, 3.01, 3.09,
+    3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92, 4.02, 4.12, 4.22, 4.32, 4.42, 4.53,
+    4.64, 4.75, 4.87, 4.99, 5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65,
+    6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87, 9.09, 9.31, 9.53, 9.76
+  ];
+
+  function findClosestE(val, baseArr) {
+    var best = val;
+    var minDiff = Infinity;
+    var decades = [0.01, 0.1, 1, 10, 100, 1000];
+    for (var d = 0; d < decades.length; d++) {
+      for (var i = 0; i < baseArr.length; i++) {
+        var candidate = Number((baseArr[i] * decades[d]).toPrecision(4));
+        var diff = Math.abs(val - candidate);
+        if (diff < minDiff) {
+          minDiff = diff;
+          best = candidate;
+        }
+      }
+    }
+    return best;
+  }
+
+  function syncLedTarget() {
+    document.getElementById('led_lt').value = document.getElementById('led_l2').value;
+  }
+
+  function toggleLedMode() {
+    var mode = document.getElementById('led_mode').value;
+    document.getElementById('led_cond_b').style.display = (mode === 'two_point') ? 'block' : 'none';
+    document.getElementById('led_cond_vf').style.display = (mode === 'known_vf') ? 'block' : 'none';
+  }
+
+  function loadLedExample() {
+    document.getElementById('led_mode').value = 'two_point';
+    toggleLedMode();
+    document.getElementById('led_v1').value = 5;
+    document.getElementById('led_r1').value = 6.3;
+    document.getElementById('led_l1').value = 18;
+    document.getElementById('led_v2').value = 4.172;
+    document.getElementById('led_r2').value = 6.3;
+    document.getElementById('led_l2').value = 12;
+    document.getElementById('led_vt').value = 5;
+    document.getElementById('led_lt').value = 12;
+    calcLedResistor();
+  }
+
+  function calcLedResistor() {
+    var mode = document.getElementById('led_mode').value;
+    var v1 = parseFloat(document.getElementById('led_v1').value);
+    var r1 = parseFloat(document.getElementById('led_r1').value);
+    var l1 = parseFloat(document.getElementById('led_l1').value);
+    var vt = parseFloat(document.getElementById('led_vt').value);
+    var lt = parseFloat(document.getElementById('led_lt').value);
+
+    var rRes = document.getElementById('led_r_res');
+    var detailRes = document.getElementById('led_detail_res');
+
+    if (isNaN(v1) || isNaN(r1) || isNaN(l1) || isNaN(vt) || isNaN(lt) || r1 <= 0 || l1 <= 0 || lt <= 0) {
+      rRes.innerText = "⚠️ 請確認條件 A 與目標條件數值皆已正確填寫！";
+      detailRes.innerText = "";
+      return;
+    }
+
+    var vf = 0;
+    if (mode === 'two_point') {
+      var v2 = parseFloat(document.getElementById('led_v2').value);
+      var r2 = parseFloat(document.getElementById('led_r2').value);
+      var l2 = parseFloat(document.getElementById('led_l2').value);
+      if (isNaN(v2) || isNaN(r2) || isNaN(l2) || r2 <= 0) {
+        rRes.innerText = "⚠️ 請填寫完整的條件 B 數據！";
+        detailRes.innerText = "";
+        return;
+      }
+      var k = (l2 * r2) / (l1 * r1);
+      if (Math.abs(1 - k) < 1e-6) {
+        rRes.innerText = "⚠️ 條件 A 與 B 電流比例相同，無法反推 Vf，請改用「已知 Vf」模式！";
+        detailRes.innerText = "";
+        return;
+      }
+      vf = (v2 - k * v1) / (1 - k);
+    } else {
+      vf = parseFloat(document.getElementById('led_vf_in').value);
+      if (isNaN(vf)) {
+        rRes.innerText = "⚠️ 請輸入已知 Vf 數值！";
+        detailRes.innerText = "";
+        return;
+      }
+    }
+
+    if (vf >= v1 || vf >= vt) {
+      rRes.innerText = "⚠️ 推算或設定的 Vf (" + vf.toFixed(3) + "V) 大於供電電壓，LED 無法導通！";
+      detailRes.innerText = "";
+      return;
+    }
+
+    var if1 = (v1 - vf) / r1;
+    var if_target = if1 * (lt / l1);
+    var r_new = (vt - vf) / if_target;
+
+    var e96 = findClosestE(r_new, E96_BASE);
+    var e24 = findClosestE(r_new, E24_BASE);
+    var lum_e96 = lt * (r_new / e96);
+    var lum_e24 = lt * (r_new / e24);
+
+    rRes.innerText = r_new.toFixed(3) + " kΩ (" + (r_new * 1000).toFixed(0) + " Ω)";
+    detailRes.innerText = "(推算 Vf = " + vf.toFixed(3) + " V, 目標電流 If = " + if_target.toFixed(3) + " mA)";
+    document.getElementById('led_std_res').innerHTML =
+      "建議標準阻值：<b>E96 (1%)</b> 選 <b>" + e96 + " kΩ</b> (預估輝度 " + lum_e96.toFixed(2) + ") ｜ " +
+      "<b>E24 (5%)</b> 選 <b>" + e24 + " kΩ</b> (預估輝度 " + lum_e24.toFixed(2) + ")";
+  }
+
+  // 啟動狀態檢查燈號
+  window.onload = function() {
+    var statusEl = document.getElementById('js_status');
+    statusEl.innerText = "🟢 系統腳本運作正常 (JavaScript Ready)";
+    statusEl.className = "status-bar ok";
+    calcLedResistor();
+  };
+</script>
+</body>
+</html>
