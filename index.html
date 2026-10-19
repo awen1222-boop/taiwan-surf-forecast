@@ -1,143 +1,63 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>硬體工程師速算工具</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.6; color: #333; }
-        .container { max-width: 800px; margin: auto; }
-        .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; }
-        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
-        input, select { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        input[type="number"] { width: 85px; }
-        button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; transition: background 0.3s; }
-        button:hover { background-color: #2980b9; }
-        .btn-secondary { background-color: #7f8c8d; font-size: 0.85em; padding: 5px 10px; }
-        .btn-secondary:hover { background-color: #636e72; }
-        .res { font-weight: bold; color: #e67e22; }
-        .sub-group { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #3498db; }
-        .sub-group label { display: inline-block; min-width: 75px; font-weight: 600; font-size: 0.9em; color: #2c3e50; }
-        .std-res-box { margin-top: 8px; font-size: 0.9em; color: #2c3e50; background: #fff8e1; padding: 8px 12px; border-radius: 4px; border: 1px solid #ffe082; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>硬體工程師速算工具</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; line-height: 1.6; color: #333; }
+  .container { max-width: 820px; margin: auto; }
+  .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+  .status-bar { text-align: center; font-size: 0.85em; margin-bottom: 20px; color: #e74c3c; font-weight: bold; }
+  .status-bar.ok { color: #27ae60; }
+  h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
+  input, select { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+  input[type="number"] { width: 90px; }
+  button { padding: 8px 15px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; transition: background 0.2s; font-weight: 600; }
+  button:hover { background-color: #2980b9; }
+  button:active { transform: translateY(1px); }
+  .btn-secondary { background-color: #7f8c8d; font-size: 0.85em; padding: 6px 12px; }
+  .btn-secondary:hover { background-color: #636e72; }
+  .res { font-weight: bold; color: #e67e22; }
+  .err { font-weight: bold; color: #e74c3c; }
+  .sub-group { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #3498db; }
+  .sub-group label { display: inline-block; min-width: 75px; font-weight: 600; font-size: 0.9em; color: #2c3e50; }
+  .std-res-box { margin-top: 8px; font-size: 0.9em; color: #2c3e50; background: #fff8e1; padding: 8px 12px; border-radius: 4px; border: 1px solid #ffe082; }
+</style>
 </head>
 <body>
 
 <div class="container">
-    <h1>硬體工程師速算工具</h1>
+  <h1>硬體工程師速算工具</h1>
+  <div id="js_status" class="status-bar">🔴 腳本尚未載入 (請檢查程式碼是否複製完整)</div>
 
-    <!-- 1. 分壓計算 -->
-    <div class="card">
-        <h2>1. 分壓計算 (Vout)</h2>
-        Vin: <input type="number" id="vin" step="any" placeholder="Vin"> 
-        Ru: <input type="number" id="ru" step="any" placeholder="Ru (Ω)"> 
-        Rd: <input type="number" id="rd" step="any" placeholder="Rd (Ω)">
-        <button onclick="calcVoltage()">計算 Vout</button>
-        <p>Vout = <span id="vout_res" class="res">0</span> V</p>
-    </div>
+  <!-- 1. 分壓計算 -->
+  <div class="card">
+    <h2>1. 分壓計算 (Vout)</h2>
+    Vin: <input type="number" id="vin" step="any" placeholder="Vin (V)">
+    Ru: <input type="number" id="ru" step="any" placeholder="Ru (Ω/kΩ)">
+    Rd: <input type="number" id="rd" step="any" placeholder="Rd (Ω/kΩ)">
+    <button type="button" onclick="calcVoltage()">計算 Vout</button>
+    <p>Vout = <span id="vout_res" class="res">0</span> V</p>
+  </div>
 
-    <!-- 2. 加熱片功率推算 -->
-    <div class="card">
-        <h2>2. 加熱片功率推算 (P=VI, V=IR)</h2>
-        <small>請輸入任意兩項進行推算：</small><br>
-        P (W): <input type="number" id="p_p" step="any" placeholder="W">
-        V (V): <input type="number" id="p_v" step="any" placeholder="V">
-        I (A): <input type="number" id="p_i" step="any" placeholder="A">
-        R (Ω): <input type="number" id="p_r" step="any" placeholder="Ω">
-        <button onclick="calcHeat()">推算</button>
-        <button class="btn-secondary" onclick="clearHeat()">清空</button>
-        <p id="heat_res" class="res">請輸入任意兩項數值</p>
-    </div>
+  <!-- 2. 加熱片功率推算 -->
+  <div class="card">
+    <h2>2. 加熱片功率推算 (P=VI, V=IR)</h2>
+    <small>請輸入任意兩項進行推算：</small><br>
+    P (W): <input type="number" id="p_p" step="any" placeholder="W">
+    V (V): <input type="number" id="p_v" step="any" placeholder="V">
+    I (A): <input type="number" id="p_i" step="any" placeholder="A">
+    R (Ω): <input type="number" id="p_r" step="any" placeholder="Ω">
+    <button type="button" onclick="calcHeat()">推算</button>
+    <button type="button" class="btn-secondary" onclick="clearHeat()">清空</button>
+    <p id="heat_res" class="res">請輸入任意兩項數值</p>
+  </div>
 
-    <!-- 3. 電池續航計算 -->
-    <div class="card">
-        <h2>3. 電池續航計算</h2>
-        容量 (mAh): <input type="number" id="bat_cap" step="any" placeholder="mAh">
-        電壓 (V): <input type="number" id="bat_v" step="any" placeholder="V">
-        功率 (W): <input type="number" id="bat_p" step="any" placeholder="W">
-        <button onclick="calcBattery()">計算時數</button>
-        <p>預估時數 = <span id="bat_res" class="res">0</span> 小時</p>
-    </div>
-
-    <!-- 4. 電容值換算 -->
-    <div class="card">
-        <h2>4. 電容值換算</h2>
-        數值: <input type="number" id="cap_val" step="any" placeholder="數值">
-        單位: <select id="cap_unit"><option value="pF">pF</option><option value="nF">nF</option><option value="uF">uF</option></select>
-        <button onclick="calcCap()">轉換</button>
-        <p id="cap_res" class="res">結果顯示</p>
-    </div>
-
-    <!-- 5. 長度與傳播延遲換算 -->
-    <div class="card">
-        <h2>5. 長度與歐姆定律</h2>
-        <input type="number" id="len_val" step="any" placeholder="數值">
-        <select id="len_unit"><option value="mil_mm">mil→mm</option><option value="mm_mil">mm→mil</option><option value="ps_inch">ps→inch</option></select>
-        <button onclick="calcLength()">轉換長度</button>
-        <p>結果 = <span id="len_res" class="res">0</span></p>
-    </div>
-
-    <!-- 6. LED 輝度與限流電阻推算 -->
-    <div class="card">
-        <h2>6. LED 輝度與限流電阻推算</h2>
-        <div style="margin-bottom: 8px;">
-            模式：
-            <select id="led_mode" onchange="toggleLedMode()">
-                <option value="two_point">雙點實驗數據反推 Vf (推薦)</option>
-                <option value="known_vf">已知 LED 順向壓降 (Vf)</option>
-            </select>
-            <button class="btn-secondary" onclick="loadLedExample()">載入預設範例</button>
-        </div>
-
-        <div class="sub-group">
-            <label>條件 A：</label>
-            電壓 V1 (V): <input type="number" id="led_v1" step="any" value="5">
-            電阻 R1 (kΩ): <input type="number" id="led_r1" step="any" value="6.3">
-            輝度 L1: <input type="number" id="led_l1" step="any" value="18">
-        </div>
-
-        <div class="sub-group" id="led_cond_b">
-            <label>條件 B：</label>
-            電壓 V2 (V): <input type="number" id="led_v2" step="any" value="4.172">
-            電阻 R2 (kΩ): <input type="number" id="led_r2" step="any" value="6.3">
-            輝度 L2: <input type="number" id="led_l2" step="any" value="12" oninput="document.getElementById('led_lt').value = this.value">
-        </div>
-
-        <div class="sub-group" id="led_cond_vf" style="display: none;">
-            <label>已知 Vf：</label>
-            順向壓降 Vf (V): <input type="number" id="led_vf_in" step="any" value="2.516">
-            <small style="color:#666;">(參考：紅/黃光約 1.8~2.0V，綠/白/藍光低電流約 2.5~2.8V)</small>
-        </div>
-
-        <div class="sub-group" style="border-left-color: #e67e22;">
-            <label>目標條件：</label>
-            目標電壓 Vt (V): <input type="number" id="led_vt" step="any" value="5">
-            目標輝度 Lt: <input type="number" id="led_lt" step="any" value="12">
-            <button onclick="calcLedResistor()">計算目標電阻</button>
-        </div>
-
-        <p style="margin-bottom: 5px;">
-            理論目標電阻 R_new = <span id="led_r_res" class="res">9.450 kΩ</span> 
-            <span id="led_detail_res" style="font-size: 0.9em; color: #555;">(推算 Vf = 2.516 V, 目標電流 If = 0.263 mA)</span>
-        </p>
-        <div id="led_std_res" class="std-res-box">
-            建議標準阻值：<b>E96 (1%)</b> 選 <b>9.53 kΩ</b> (預估輝度 11.90) ｜ <b>E24 (5%)</b> 選 <b>9.1 kΩ</b> (預估輝度 12.46)
-        </div>
-    </div>
-</div>
-
-<script>
-    function calcVoltage() {
-        let vin = parseFloat(document.getElementById('vin').value), ru = parseFloat(document.getElementById('ru').value), rd = parseFloat(document.getElementById('rd').value);
-        if (isNaN(vin) || isNaN(ru) || isNaN(rd) || (ru + rd) === 0) return;
-        document.getElementById('vout_res').innerText = (vin * rd / (ru + rd)).toFixed(3);
-    }
-
-    function calcHeat() {
-        let p = parseFloat(document.getElementById('p_p').value);
-        let v = parseFloat(document.getElementById('p_v').value);
-        let i = parseFloat(document.getElementById('p_i').value);
-        let r = parseFloat(document.getElementById('p_r').value);
-
-        if (!isNaN(p) && !isNaN(v)) { i =
+  <!-- 3. 電池續航計算 -->
+  <div class="card">
+    <h2>3. 電池續航計算</h2>
+    容量 (mAh): <input type="number" id="bat_cap" step="any" placeholder="mAh">
+    電壓 (V): <input type="number" id="bat_v" step="any" placeholder="V">
+    功率 (W): <input type="number" id="bat_p" step="any" placeholder="W">
